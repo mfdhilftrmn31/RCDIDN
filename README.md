@@ -579,65 +579,508 @@ All 6 Low vulnerabilities (L1–L6) have been patched: TOCTOU race condition in 
 Run `python3 rcdidn.py` to enter the interactive commander:
 
 ```
+    ██████╗  ██████╗ ██████╗ ██╗██████╗ ███╗   ██╗
+    ██╔══██╗██╔════╝ ██╔══██╗██║██╔══██╗████╗  ██║
+    ██████╔╝██║      ██║  ██║██║██║  ██║██╔██╗ ██║
+    ██╔══██╗██║      ██║  ██║██║██║  ██║██║╚██╗██║
+    ██║  ██║╚██████╗ ██████╔╝██║██████╔╝██║ ╚████║
+    ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝╚═════╝╚═╝  ╚═══╝
+    === Radioactive Cognitive Data Indonesia ===
+    [*] V1.0 — HACKER KILLER (38 FEATURES)
+    [*] Creator: Muhamad Fadhil Faturohman
+    [+] RCDIDN: Turning the Hunted into the Hunter.
+
   [AI HONEYPOT]  Status : ACTIVE  |  Key : AIzaSyAB****xyz1
   [AI HONEYPOT]  Model  : gemini-1.5-flash  |  Port 2323 ready
 
 RCDIDN >
 ```
 
+---
+
+### `help` — Show Full Command Menu
+
+```
+RCDIDN > help
+```
+```
+╔══════════════════════════════════════════════════════════╗
+║       RCDIDN V1.0 — HACKER KILLER COMMANDER              ║
+║       Radioactive Cognitive Data Indonesia               ║
+╠══════════════════════════════════════════════════════════╣
+
+  CORE DEFENSE
+  run          → Vault files + deploy MIRAGE DROP canaries
+  restart      → Re-lock files with current key
+  restore      → Decrypt all files back to original
+  gk           → Rotate Master Password
+
+  IPS & HONEYPOT
+  ips start    → Start IPS + AI Honeypot + Ghost Network
+  ips stop     → Stop all honeypot daemons
+
+  THREAT INTELLIGENCE
+  stats        → Live threat intelligence dashboard
+  profile      → MINDPRINT attacker behavioral profiling
+  dwelltime    → PHANTOM CLOCK LLM dwell time analysis
+  canary       → MIRAGE DROP canary hit tracker
+  report       → Generate HTML threat intelligence report
+
+  NOVEL RESEARCH FEATURES
+  temporal              → TEMPORAL DECEPTION GRID
+  temporal profile <n>  → busy_server | flapping | degrading |
+                          recovering  | random_chaos
+  mirror                → DARK MIRROR
+  economics             → HONEYPOT ECONOMICS
+  pheromone             → DIGITAL PHEROMONE stats
+  pheromone deploy      → Deploy all 5 bait files
+  ghostnet              → GHOST NETWORK topology
+  evidence              → REGULATORY TRAP status
+  evidence collect      → Collect forensic evidence (SHA-256)
+  evidence report idcert    → Report for ID-CERT Indonesia
+  evidence report bssid     → Report for BSSN Indonesia
+  evidence report interpol  → Report for INTERPOL
+
+  SYSTEM
+  test         → Run 6 unit tests
+  status       → Show vault and daemon status
+  help         → Show this menu
+  exit         → Exit commander
+
+  AI HONEYPOT CONFIG
+  setkey       → Set Gemini API key
+  aikey        → Show AI key status
+╚══════════════════════════════════════════════════════════╝
+```
+
+---
+
 ### Core Defense
 
-| Command | What It Does |
-|---------|-------------|
-| `run` | Scan current directory, encrypt sensitive files, deploy MIRAGE DROP canaries |
-| `restart` | Re-encrypt all files after editing (restore → edit → restart) |
-| `restore` | Decrypt all files back to original filesystem locations |
-| `gk` | Rotate the Master Password with confirmation prompt |
+#### `run` — Encrypt files + deploy canaries
+
+```
+RCDIDN > run
+```
+```
+[?] Enter RCDIDN Master Password: ████████████
+
+[+] Scanning current directory for sensitive files...
+  [+] Vaulted : .env            → ~/.rcdidn_vault/3a7f1b2c4d8e.enc
+  [+] Vaulted : database.json   → ~/.rcdidn_vault/9e2d5a6f1c4b.enc
+  [+] Vaulted : config.yaml     → ~/.rcdidn_vault/7c3b8d9e2f1a.enc
+  [+] Canary deployed : .env    (fake AWS keys + DB credentials)
+  [+] Canary deployed : database.json
+  [+] .gitignore updated with RCDIDN protection rules.
+  [+] PHP Sentinel injected into index.php
+
+[+] Done. 3 file(s) vaulted. Canaries deployed.
+
+=========================================================
+[!] BACKUP REMINDER  : /home/user/.rcdidn_vault
+[!] Losing this directory means ALL encrypted files are UNRECOVERABLE.
+=========================================================
+```
+
+#### `restore` — Decrypt files back to original
+
+```
+RCDIDN > restore
+```
+```
+[!] Restore ALL files? (y/N): y
+[?] Enter RCDIDN Master Password: ████████████
+
+  [+] Restored: .env
+  [+] Restored: database.json
+  [+] Restored: config.yaml
+
+[+] Restore complete. 3 file(s) recovered.
+```
+
+#### `restart` — Re-encrypt after editing
+
+```
+RCDIDN > restart
+```
+```
+[?] Enter RCDIDN Master Password: ████████████
+
+  [+] Re-locked: .env
+  [+] Re-locked: database.json
+  [+] Re-locked: config.yaml
+
+[+] Restart complete. 3 file(s) re-locked.
+```
+
+> Edit workflow: `restore` → edit your file → `restart`
+
+#### `gk` — Rotate Master Password
+
+```
+RCDIDN > gk
+```
+```
+[!] WARNING: A new password renders all previously encrypted files UNRECOVERABLE
+    unless you decrypt them first.
+    Continue? (y/N): y
+
+    Create Master Password: ████████████
+    Confirm Password:       ████████████
+
+[+] New Master Password set. Re-run 'run' to re-encrypt with the new key.
+```
+
+> ⚠️ Always run `restore` first before rotating the password.
+
+---
 
 ### IPS & Honeypot
 
-| Command | What It Does |
-|---------|-------------|
-| `ips start` | Launch AI honeypot + tarpits + auto-ban daemon as background process |
-| `ips stop` | Stop the IPS daemon cleanly |
+#### `ips start` — Launch all honeypots + auto-ban daemon
+
+```
+RCDIDN > ips start
+```
+```
+  [+] HoneyPort 'AI-Interrogator' active on port 2323 [AI]     (max 200 threads)
+  [+] HoneyPort 'Fake-SSH'        active on port 2222 [TARPIT] (max 200 threads)
+  [+] HoneyPort 'Fake-MySQL'      active on port 3306 [TARPIT] (max 200 threads)
+  [+] GHOST NETWORK active on port 4444 — simulating 10 fake hosts
+  [+] IPS daemon launched (PID: 14821)
+```
+
+#### `ips stop` — Stop all honeypots
+
+```
+RCDIDN > ips stop
+```
+```
+  [+] IPS daemon (PID 14821) stopped.
+```
+
+---
 
 ### Threat Intelligence
 
-| Command | What It Does |
-|---------|-------------|
-| `stats` | Live ASCII threat intelligence dashboard |
-| `profile` | MINDPRINT behavioral profiles for every unique attacker IP |
-| `dwelltime` | PHANTOM CLOCK LLM vs static tarpit dwell time analysis |
-| `canary` | MIRAGE DROP canary hit statistics |
-| `report` | Generate HTML threat report with Chart.js visualizations |
+#### `stats` — Live threat dashboard
+
+```
+RCDIDN > stats
+```
+```
+╔══════════════════════════════════════════════════════════╗
+║        RCDIDN — THREAT INTELLIGENCE DASHBOARD            ║
+╠══════════════════════════════════════════════════════════╣
+  Period              : Last 30 days
+  Total Events        : 2,847
+  Unique Attacker IPs : 391
+  IPs Banned          : 388
+  Attack Events       : 1,204
+╠══════════════════════════════════════════════════════════╣
+  TOP ATTACKER TOOLS
+  Masscan        ████████████████████ 42%
+  Nmap           ████████████░░░░░░░░ 28%
+  ZGrab          ██████░░░░░░░░░░░░░░ 15%
+  Unknown        ████░░░░░░░░░░░░░░░░ 10%
+  Mirai          ██░░░░░░░░░░░░░░░░░░  5%
+╠══════════════════════════════════════════════════════════╣
+  TOP ATTACKING COUNTRIES
+  China          ████████████████████ 38%
+  Russia         ██████████░░░░░░░░░░ 22%
+  Netherlands    ██████░░░░░░░░░░░░░░ 14%
+  USA            ████░░░░░░░░░░░░░░░░ 12%
+  Germany        ███░░░░░░░░░░░░░░░░░  9%
+╠══════════════════════════════════════════════════════════╣
+  PHANTOM CLOCK — HONEYPOT EFFECTIVENESS
+  AI Honeypot Avg Dwell : 18m 24s
+  Canary Hits           : 47
+  Total Dwell Sessions  : 93
+╚══════════════════════════════════════════════════════════╝
+```
+
+#### `profile` — MINDPRINT attacker profiling
+
+```
+RCDIDN > profile
+```
+```
+╔══════════════════════════════════════════════════════════╗
+║        RCDIDN — MINDPRINT BEHAVIORAL PROFILING ENGINE    ║
+║  Total Unique IPs Profiled : 391                         ║
+╠══════════════════════════════════════════════════════════╣
+
+  [RED] IP            : 185.220.101.47 [Russia]
+        Persona      : APT_CANDIDATE
+        Threat Score : 90/100
+        Total Hits   : 34
+        First Seen   : 2026-03-01T02:14:33
+        Last Seen    : 2026-03-14T11:47:02
+        ISP          : Selectel Ltd
+
+  [YEL] IP            : 45.33.32.156 [USA]
+        Persona      : BOTNET_NODE
+        Threat Score : 85/100
+        Total Hits   : 12
+        Tools Used   : Masscan
+        ISP          : Linode LLC
+
+  [GRN] IP            : 66.240.192.138 [USA]
+        Persona      : RESEARCHER
+        Threat Score : 20/100
+        Total Hits   : 3
+        Tools Used   : Shodan
+        ISP          : Shodan.io
+
+╚══════════════════════════════════════════════════════════╝
+```
+
+| Persona | Score | Meaning |
+|---------|-------|---------|
+| `APT_CANDIDATE` | 90 | Manual recon, hits ≥ 10, no automated tool |
+| `BOTNET_NODE` | 85 | Clock-driven — interval variance < 5s² |
+| `PERSISTENT` | 70 | Repeated hits ≥ 3, semi-manual |
+| `SCRIPTKIDDIE` | 50 | Known scanner tools detected |
+| `RESEARCHER` | 20 | Shodan/Censys — not auto-banned |
+
+#### `dwelltime` — PHANTOM CLOCK analysis
+
+```
+RCDIDN > dwelltime
+```
+```
+╔══════════════════════════════════════════════════════════╗
+║          RCDIDN — PHANTOM CLOCK DWELL TIME ANALYSIS      ║
+╠══════════════════════════════════════════════════════════╣
+  Total AI Sessions        : 93
+  Total Tarpit Sessions    : 298
+  AI Avg Dwell Time        : 18m 24s
+  Longest AI Session       : 1h 2m 11s
+  Avg Commands / Session   : 14.7
+  Most Typed Command       : 'cat /etc/passwd' (312x total)
+  Engagement Rate (> 1 min): 78.5%
+╠══════════════════════════════════════════════════════════╣
+  COMPARISON: AI HONEYPOT vs STATIC TARPIT
+  AI Honeypot Avg          : 18m 24s
+  Static Tarpit Avg        : 3m 8s
+  LLM Effectiveness        : 5.9x longer than tarpit
+╚══════════════════════════════════════════════════════════╝
+```
+
+#### `canary` — MIRAGE DROP hit tracker
+
+```
+RCDIDN > canary
+```
+```
+╔══════════════════════════════════════════════════════════╗
+║          RCDIDN — MIRAGE DROP CANARY HIT TRACKER         ║
+╠══════════════════════════════════════════════════════════╣
+  Total Canary Hits     : 47
+  Unique Attacker IPs   : 31
+  Last Hit              : 2026-03-14T11:47:02
+
+  RECENT HITS:
+  2026-03-14T11:47:02  185.220.101.47  [Russia]   → .env
+  2026-03-14T09:33:18  45.33.32.156    [USA]      → database.json
+  2026-03-13T22:14:05  91.108.4.71     [Germany]  → config.yaml
+╚══════════════════════════════════════════════════════════╝
+```
+
+#### `report` — Generate HTML threat report
+
+```
+RCDIDN > report
+```
+```
+[+] Generating threat intelligence report...
+[+] Analyzed 2,847 log entries
+[+] Report saved : rcdidn_report_20260314_135200.html
+[+] Open in any browser to view the visualizations.
+```
+
+---
 
 ### Novel Research Features
 
-| Command | What It Does |
-|---------|-------------|
-| `temporal` | TEMPORAL DECEPTION GRID — timing stats and active profile |
-| `temporal profile <n>` | Switch: `busy_server` / `flapping` / `degrading` / `recovering` / `random_chaos` |
-| `mirror` | DARK MIRROR — attacker OS and tool detection statistics |
-| `economics` | HONEYPOT ECONOMICS — economic cost imposed on attackers |
-| `pheromone` | DIGITAL PHEROMONE — bait deployment status and hit stats |
-| `pheromone deploy` | Deploy all 5 pheromone bait files to current directory |
-| `ghostnet` | GHOST NETWORK — fake enterprise topology stats |
-| `evidence` | REGULATORY TRAP — forensic evidence collection status |
-| `evidence collect` | Collect all forensic evidence with SHA-256 chain of custody |
-| `evidence report idcert` | Generate formatted report for ID-CERT Indonesia |
-| `evidence report bssid` | Generate formatted report for BSSN Indonesia |
-| `evidence report interpol` | Generate formatted report for INTERPOL Cybercrime Division |
+#### `temporal` — Check timing profile
+
+```
+RCDIDN > temporal
+```
+```
+[+] Current Temporal Profile: RANDOM_CHAOS
+  Available profiles: off, random_chaos, busy_server, tarpit_extreme
+  Usage: temporal profile <n>
+```
+
+#### `temporal profile <n>` — Switch profile
+
+```
+RCDIDN > temporal profile busy_server
+```
+```
+[+] Temporal Deception Grid set to: BUSY_SERVER
+```
+
+| Profile | Delay | Effect |
+|---------|-------|--------|
+| `random_chaos` | 0.1–5.0s | Destroys scanner timing model |
+| `busy_server` | 2.0–4.0s | Simulates high-load production server |
+| `tarpit_extreme` | 10.0–20.0s | Exhausts scanner connection pools |
+| `off` | 0s | Disable |
+
+#### `mirror` — DARK MIRROR
+
+```
+RCDIDN > mirror
+```
+```
+[*] Launching Dark Mirror in background (Port 8080)...
+[+] Dark Mirror active. Reflecting payloads back to senders.
+```
+
+#### `economics` — HONEYPOT ECONOMICS
+
+```
+RCDIDN > economics
+```
+```
+╔══════════════════════════════════════════════════════════╗
+║           RCDIDN — HONEYPOT ECONOMICS (DAMAGE)           ║
+╠══════════════════════════════════════════════════════════╣
+  Total Attacker Sessions Trapped : 391
+  Total Attacker Time Wasted      : 120.40 Hours
+  Estimated Financial Damage      : $6,020.00 USD
+╚══════════════════════════════════════════════════════════╝
+```
+
+#### `pheromone deploy` — Deploy bait files
+
+```
+RCDIDN > pheromone deploy
+```
+```
+[+] Deployed 5 Digital Pheromone bait files.
+```
+
+| Bait File | What Attackers See |
+|-----------|-------------------|
+| `robots.txt` | Fake `.env` and backup zip reference |
+| `info.php` | Fake phpinfo() with DB error |
+| `README_INTERNAL.txt` | Fake backup location hint |
+| `backup_2024_prod.zip` | Empty ZIP that triggers scanner |
+| `index.html_comment` | Hidden admin panel comment |
+
+#### `ghostnet` — GHOST NETWORK
+
+```
+RCDIDN > ghostnet
+```
+```
+[*] Launching Ghost Network in background (Port 4444)...
+[+] Ghost Network active. Simulating high-value target on port 4444
+```
+
+#### `evidence collect` — Collect forensic evidence
+
+```
+RCDIDN > evidence collect
+```
+```
+[+] Regulatory Trap evidence bundle created for: ALL_EVIDENCE
+  [-] Report  : ~/.sys_meta_rcdidn/legal_evidence/Evidence_Report_20260314.txt
+  [-] Bundle  : ~/.sys_meta_rcdidn/legal_evidence/Evidence_Bundle_20260314.zip
+  [-] Password: ~/.sys_meta_rcdidn/legal_evidence/Evidence_Bundle_20260314.zip.password.txt
+  [!] ZIP and password file are only readable by owner (chmod 600)
+```
+
+#### `evidence report` — Generate authority reports
+
+```
+RCDIDN > evidence report idcert
+[+] Regulatory Trap evidence bundle created for: idcert
+
+RCDIDN > evidence report bssid
+[+] Regulatory Trap evidence bundle created for: bssid
+
+RCDIDN > evidence report interpol
+[+] Regulatory Trap evidence bundle created for: interpol
+```
+
+---
 
 ### System & AI Key
 
-| Command | What It Does |
-|---------|-------------|
-| `test` | Run 6 unit tests — all must show `[PASS]` |
-| `status` | Vault size, IPS daemon state, log statistics |
-| `setkey` | Set Gemini API key — saved permanently to `~/.bashrc` |
-| `aikey` | Check current AI key status (active / inactive, key masked) |
-| `help` | Show full command menu |
-| `exit` | Exit the commander |
+#### `test` — Run self-test suite
+
+```
+RCDIDN > test
+```
+```
+[=== RCDIDN SELF-TEST SUITE — V1.0 HACKER KILLER ===]
+  [PASS] Test 1 : AES-256-GCM encrypt → decrypt round-trip
+  [PASS] Test 2 : MIRAGE DROP canary generation
+  [PASS] Test 3 : PBKDF2HMAC Key derivation (deterministic, unique, AES-256-GCM compatible)
+  [PASS] Test 4 : Structured JSON logging
+  [PASS] Test 5 : Encrypted Shadow manifest save → load
+  [PASS] Test 6 : Wrong password correctly raises InvalidTag (AES-GCM Authenticated)
+
+  Result : 6/6 tests passed
+  [OK] ALL TESTS PASSED — RCDIDN IS MILITARY-GRADE READY
+```
+
+#### `status` — System status
+
+```
+RCDIDN > status
+```
+```
+[=== RCDIDN V1.0 HACKER KILLER — SYSTEM STATUS ===]
+  [+] Shadow Manifest   : Found (Encrypted Blob)
+  [+] Vault Files       : 3
+  [+] IPS Daemon PID    : 14821 (running)
+  [+] Log Entries       : 2,847 (284.3 KB)
+  [+] PHANTOM CLOCK     : 93 session(s) recorded
+```
+
+#### `setkey` — Set Gemini API key
+
+```
+RCDIDN > setkey
+```
+```
+  [AI HONEYPOT] Enter your Gemini API key.
+  Gemini API Key: AIzaSyABCDEF...
+
+  [+] Gemini API key saved to /root/.bashrc
+  [+] AI Honeypot ACTIVATED  |  Key: AIzaSyAB****xyz1
+  [+] Run 'ips start' to launch AI Interrogator on port 2323
+```
+
+#### `aikey` — Check AI key status
+
+```
+RCDIDN > aikey
+```
+
+With key active:
+```
+  [AI HONEYPOT]  Status : ACTIVE  |  Key : AIzaSyAB****xyz1
+  [AI HONEYPOT]  Model  : gemini-1.5-flash  |  Port 2323 ready
+```
+
+Without key:
+```
+  [AI HONEYPOT]  Status : INACTIVE  (no RCDIDN_AI_KEY set)
+  [AI HONEYPOT]  Tip    : type 'setkey' to activate Gemini AI Interrogator
+```
+
+#### `exit` — Exit commander
+
+```
+RCDIDN > exit
+```
 
 ---
 
