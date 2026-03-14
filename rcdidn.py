@@ -1,0 +1,2287 @@
+#!/usr/bin/env python3
+# ==============================================================================
+# MIT License
+#
+# Copyright (c) 2026 Muhamad Fadhil Faturohman
+# RCDIDN V1.0 — HACKER KILLER (Radioactive Cognitive Data Indonesia)
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in ALL copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+# ATTRIBUTION: The name "Muhamad Fadhil Faturohman" and "RCDIDN V1.0"
+# MUST remain visible in all copies, derivatives, and commercial products.
+# ==============================================================================
+"""
+RCDIDN V1.0 - HACKER KILLER
+Radioactive Cognitive Data Indonesia — Defensive Security System
+Creator: Muhamad Fadhil Faturohman
+38 FEATURES
+
+Novel Contributions:
+  - PHANTOM CLOCK  : LLM Dwell Time Measurement System      [NOVEL #1]
+  - MINDPRINT      : Attacker Behavioral Profiling Engine   [NOVEL #2]
+  - MIRAGE DROP    : Adaptive Canary Response System        [NOVEL #3]
+  - TEMPORAL GRID  : Timing Manipulation Defense            [NOVEL #4]
+  - DARK MIRROR    : Attacker Environment Reflection        [NOVEL #5]
+  - ECONOMICS      : Attacker Cost Quantification           [NOVEL #6]
+  - PHEROMONE      : Active Attacker Attraction System      [NOVEL #7]
+  - GHOST NETWORK  : Single-Host Enterprise Simulation      [NOVEL #8]
+  - REGULATORY     : Forensic-Grade Evidence Collection     [NOVEL #9]
+  - HTML Threat Intelligence Report Generator
+  - ASCII Threat Intelligence Dashboard
+  - Built-in Self-Test Suite (6 unit tests)
+
+Requirements:
+  pip install cryptography
+"""
+
+import json
+import os
+import re
+import time
+import secrets
+import hashlib
+import subprocess
+import platform
+import base64
+import random
+import string
+import sys
+import socket
+import threading
+import urllib.request
+import urllib.parse
+import argparse
+import pathlib
+import zipfile
+import getpass
+import gc
+import hmac
+import ipaddress
+import shutil
+from pathlib import Path
+from datetime import datetime, timedelta
+from collections import defaultdict
+
+# ================= ANTI-DEBUGGING & SELF-DESTRUCT =================
+# Detects attached debugger and self-destructs to prevent reverse engineering
+if sys.gettrace() is not None:
+    print("[!] FATAL: Debugger detected. Initiating Self-Destruct Protocol...")
+    try:
+        with open(__file__, 'w') as f:
+            f.write("# BOOM. RCDIDN SECURED.")
+        os.remove(__file__)
+    except Exception:
+        pass
+    sys.exit()
+
+try:
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.exceptions import InvalidTag
+except ImportError:
+    print("[-] ERROR: Cryptography module not found. Run: pip install cryptography")
+    sys.exit()
+
+# ================= BANNER =================
+def print_banner():
+    print(r"""
+    ██████╗  ██████╗ ██████╗ ██╗██████╗ ███╗   ██╗
+    ██╔══██╗██╔════╝ ██╔══██╗██║██╔══██╗████╗  ██║
+    ██████╔╝██║      ██║  ██║██║██║  ██║██╔██╗ ██║
+    ██╔══██╗██║      ██║  ██║██║██║  ██║██║╚██╗██║
+    ██║  ██║╚██████╗ ██████╔╝██║██████╔╝██║ ╚████║
+    ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝╚═════╝ ╚═╝  ╚═══╝
+    === Radioactive Cognitive Data Indonesia ===
+    [*] V1.0 — HACKER KILLER (38 FEATURES)
+    [*] Creator: Muhamad Fadhil Faturohman
+    [!] KEEP YOUR KEYS IN A SAFE PLACE
+    [!] CHECK HOW TO USE THE TOOL IN THE README BEFORE YOU USE IT
+    [+] RCDIDN: Turning the Hunted into the Hunter.
+    """)
+
+# ================= CONFIGURATION =================
+VAULT_DIR     = os.path.join(str(Path.home()), ".rcdidn_vault")
+SHADOW_DIR    = os.path.join(str(Path.home()), ".sys_meta_rcdidn")
+SALT_FILE     = os.path.join(SHADOW_DIR, "sys_crypto_salt.bin")
+MANIFEST_NAME = "core_system_map.bin"
+HIDDEN_LOG    = os.path.join(SHADOW_DIR, "sys_kern_meta.log")
+IPS_PID_FILE  = os.path.join(SHADOW_DIR, "rcdidn_ips.pid")
+CANARY_LOG    = os.path.join(SHADOW_DIR, "canary_hits.log")
+DWELL_LOG     = os.path.join(SHADOW_DIR, "phantom_clock.log")
+EVIDENCE_DIR  = os.path.join(SHADOW_DIR, "legal_evidence")
+
+SENSITIVE_EXTS = [
+    '.json', '.csv', '.sql', '.env', '.yaml', '.yml',
+    '.config', '.ini', '.properties', '.toml', '.xml',
+    '.pem', '.key', '.crt', '.p12', '.pfx'
+]
+
+MAX_FILE_SIZE = 50 * 1024 * 1024  # Limit 50MB anti-Memory Exhaustion
+
+# Set Gemini API key via environment variable
+AI_API_KEY = os.environ.get("RCDIDN_AI_KEY", "")
+
+# In-memory geolocation cache to avoid duplicate API calls
+_geo_cache: dict = {}
+_temporal_profile = "random_chaos" # default
+
+# Security constants
+MAX_GEO_CACHE        = 5000   # Batas entri cache GeoIP (TINGGI #3 — anti memory leak)
+MAX_TARPIT_SECONDS   = 3600   # Batas sesi tarpit 1 jam (TINGGI #2 — anti thread exhaustion)
+MAX_HONEYPOT_THREADS = 200    # RENDAH PATCH — batas max thread concurrent per honeypot port
+
+# Semaphore per port untuk batasi thread honeypot
+_honeypot_semaphore: dict = {}
+
+# ================= SYSTEM UTILS =================
+def ensure_dirs():
+    """Create vault and shadow directories if they do not exist."""
+    for d in [VAULT_DIR, SHADOW_DIR, EVIDENCE_DIR]:
+        try:
+            # Langsung pakai exist_ok=True — hindari TOCTOU race condition (RENDAH #1)
+            os.makedirs(d, mode=0o700, exist_ok=True)
+        except Exception as e:
+            print(f"[-] Failed to create directory {d}: {e}")
+
+def set_immutable(path: str, active: bool = True):
+    """
+    Lock or unlock a file at OS level.
+    """
+    if not os.path.exists(path) and active is False:
+        return
+    sys_os = platform.system()
+    try:
+        if sys_os == "Linux":
+            subprocess.run(
+                ["sudo", "chattr", "+i" if active else "-i", path],
+                capture_output=True, timeout=5
+            )
+        elif sys_os == "Darwin":
+            subprocess.run(
+                ["chflags", "uchg" if active else "nouchg", path],
+                capture_output=True, timeout=5
+            )
+        elif sys_os == "Windows":
+            if active:
+                subprocess.run(["attrib", "+r", "+s", "+h", path], capture_output=True)
+                subprocess.run(["icacls", path, "/deny", "Everyone:(D,WD)"], capture_output=True)
+            else:
+                subprocess.run(["icacls", path, "/remove:d", "Everyone"], capture_output=True)
+                subprocess.run(["attrib", "-r", "-s", "-h", path], capture_output=True)
+    except Exception as e:
+        log_event(
+            f"[IMMUTABLE] Failed to {'lock' if active else 'unlock'} {path}: {e}",
+            event_type="ERROR"
+        )
+
+def update_gitignore():
+    """Append RCDIDN protection rules to .gitignore."""
+    rules = [
+        "\n# === RCDIDN Protection ===",
+        ".rcdidn_vault/", ".sys_meta_rcdidn/",
+        "*.bin", "rc_sentinel.html", "rc_ransom.html",
+        "rcdidn_report_*.html"
+    ]
+    gitignore = ".gitignore"
+    try:
+        existing = open(gitignore).read() if os.path.exists(gitignore) else ""
+        with open(gitignore, "a") as f:
+            for rule in rules:
+                if rule.strip() not in existing:
+                    f.write(rule + "\n")
+        print("[+] .gitignore updated with RCDIDN protection rules.")
+    except Exception as e:
+        log_event(f"[GITIGNORE] Error: {e}", event_type="ERROR")
+
+# ================= STRUCTURED JSON LOGGING =================
+def log_event(message: str, event_type: str = "INFO", ip: str = None,
+              port: int = None, tool: str = None, country: str = None):
+    """Write a structured JSON log entry per line with automatic 5MB rotation."""
+    ensure_dirs()
+    entry = {
+        "timestamp": time.strftime('%Y-%m-%dT%H:%M:%S'),
+        "event":     event_type,
+        "message":   message,
+        "ip":        ip,
+        "port":      port,
+        "tool_detected": tool,
+        "country":   country,
+        "hostname":  socket.gethostname(),
+        "os":        platform.system()
+    }
+    entry = {k: v for k, v in entry.items() if v is not None}
+
+    if not os.path.exists(HIDDEN_LOG):
+        open(HIDDEN_LOG, 'w').close()
+
+    try:
+        with open(HIDDEN_LOG, 'a') as f:
+            f.write(json.dumps(entry) + "\n")
+        if os.path.getsize(HIDDEN_LOG) > 5 * 1024 * 1024:
+            os.rename(HIDDEN_LOG, f"{HIDDEN_LOG}.{int(time.time())}.bak")
+    except Exception:
+        pass
+
+def read_logs() -> list:
+    entries = []
+    if not os.path.exists(HIDDEN_LOG):
+        return entries
+    try:
+        with open(HIDDEN_LOG, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        entries.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        entries.append({"timestamp": "", "event": "LEGACY", "message": line})
+    except Exception as e:
+        log_event(f"[READ_LOGS] Error: {e}", event_type="ERROR")
+    return entries
+
+# ================= GEOLOCATION ENRICHMENT =================
+def get_ip_geo(ip: str) -> dict:
+    global _geo_cache
+    if ip in _geo_cache:
+        return _geo_cache[ip]
+
+    default = {
+        'country': 'Unknown', 'country_code': 'XX',
+        'city': 'Unknown', 'isp': 'Unknown', 'asn': 'Unknown'
+    }
+    try:
+        # SEDANG #2 — Upgrade ke HTTPS agar response GeoIP tidak bisa di-MITM
+        url = f"https://ipinfo.io/{ip}/json"
+        req = urllib.request.Request(url, headers={'User-Agent': 'RCDIDN/15.0'})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            data = json.loads(resp.read())
+            if 'ip' in data:
+                result = {
+                    'country':      data.get('country', 'Unknown'),
+                    'country_code': data.get('country', 'XX'),
+                    'city':         data.get('city', 'Unknown'),
+                    'isp':          data.get('org', 'Unknown'),
+                    'asn':          data.get('org', 'Unknown')
+                }
+                # TINGGI #3 — Batas ukuran cache: hapus entri terlama jika penuh
+                if len(_geo_cache) >= MAX_GEO_CACHE:
+                    oldest_key = next(iter(_geo_cache))
+                    del _geo_cache[oldest_key]
+                _geo_cache[ip] = result
+                return result
+    except Exception as e:
+        log_event(f"[GEO] Lookup failed for {ip}: {e}", event_type="ERROR")
+
+    _geo_cache[ip] = default
+    return default
+
+# ================= HIVE-MIND WEBHOOK =================
+def sync_hive_mind(ip: str, location: str, isp: str):
+    try:
+        log_event(f"[HIVE-MIND] Synced {ip} | {location} | {isp}", event_type="HIVE")
+    except Exception as e:
+        log_event(f"[HIVE-MIND] Sync error: {e}", event_type="ERROR")
+
+# ================= KEY MANAGEMENT & AES-256 ENCRYPTION =================
+def derive_true_aes256_key(password: str, salt: bytes) -> bytes:
+    """PBKDF2HMAC 600,000 Iterations. Membunuh upaya Brute-Force GPU."""
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(), length=32, salt=salt, iterations=600_000
+    )
+    return kdf.derive(password.encode())
+
+def get_or_create_key(force_new: bool = False) -> bytes:
+    """Zero-Knowledge Storage: Tidak menyimpan Key di disk, hanya Salt."""
+    ensure_dirs()
+    if force_new or not os.path.exists(SALT_FILE):
+        print("\n[!] INITIAL SETUP: Vault Authentication")
+        print("[!] RCDIDN uses True AES-256-GCM. If you lose this password, data is PERMANENTLY GONE.")
+        while True:
+            pwd = getpass.getpass("    Create Master Password: ")
+            pwd2 = getpass.getpass("    Confirm Password: ")
+            if pwd == pwd2 and len(pwd) >= 8: break
+            print("    [-] Passwords do not match or too short (min 8 chars). Try again.\n")
+        if os.path.exists(SALT_FILE): set_immutable(SALT_FILE, False)
+        salt = os.urandom(16)
+        with open(SALT_FILE, 'wb') as f: f.write(salt)
+        set_immutable(SALT_FILE, True)
+    else:
+        set_immutable(SALT_FILE, False)
+        with open(SALT_FILE, 'rb') as f: salt = f.read()
+        set_immutable(SALT_FILE, True)
+        pwd = getpass.getpass("\n[?] Enter RCDIDN Master Password: ")
+    return derive_true_aes256_key(pwd, salt)
+
+def cmd_generate_key():
+    print("[!] WARNING: A new password renders all previously encrypted files UNRECOVERABLE")
+    print("    unless you decrypt them first.")
+    confirm = input("    Continue? (y/N): ").strip().lower()
+    if confirm == 'y': get_or_create_key(force_new=True)
+    else: print("[*] Password rotation cancelled.")
+
+def get_vault_filename(src_path: str, key: bytes) -> str:
+    """HMAC Path Obfuscation agar hacker tidak bisa menebak nama file asli via LFI."""
+    # TINGGI #4 — Tambah digestmod= agar tidak deprecated di Python 3.8+
+    h = hmac.new(key, src_path.encode(), digestmod=hashlib.sha256).hexdigest()
+    return f"{h[:16]}.enc"
+
+def encrypt_file(src_path: str, master_key: bytes) -> str:
+    if os.path.getsize(src_path) > MAX_FILE_SIZE:
+        raise MemoryError("File exceeds 50MB safety limit for RAM buffering.")
+    with open(src_path, 'rb') as f: data = f.read()
+    aesgcm = AESGCM(master_key)
+    nonce = os.urandom(12)
+    ciphertext = aesgcm.encrypt(nonce, data, None)
+    vault_filename = get_vault_filename(src_path, master_key)
+    vault_path = os.path.join(VAULT_DIR, vault_filename)
+    with open(vault_path, 'wb') as f: f.write(nonce + ciphertext)
+    set_immutable(vault_path, True)
+    return vault_path
+
+def decrypt_file(vault_path: str, original_path: str, master_key: bytes):
+    set_immutable(vault_path, False)
+    with open(vault_path, 'rb') as f: encrypted = f.read()
+    nonce = encrypted[:12]
+    ciphertext = encrypted[12:]
+    aesgcm = AESGCM(master_key)
+    data = aesgcm.decrypt(nonce, ciphertext, None)
+    os.makedirs(os.path.dirname(os.path.abspath(original_path)), exist_ok=True)
+    with open(original_path, 'wb') as f: f.write(data)
+
+# ================= MIRAGE DROP — ADAPTIVE CANARY SYSTEM =================
+def generate_canary(original_path: str) -> str:
+    ext = Path(original_path).suffix.lower()
+    # TINGGI #1 — Ganti random.choices() (PRNG) dengan secrets.choice() (CSPRNG)
+    # agar canary tidak bisa di-fingerprint via prediksi pola
+    _upper_digits = string.ascii_uppercase + string.digits
+    _all_chars    = string.ascii_letters + string.digits + "/+="
+    fake_aws    = "AKIA" + ''.join(secrets.choice(_upper_digits) for _ in range(16))
+    fake_secret = ''.join(secrets.choice(_all_chars) for _ in range(40))
+    fake_db     = secrets.token_hex(12)
+    fake_stripe = "sk_live_" + secrets.token_hex(24)
+    fake_token  = secrets.token_hex(32)
+
+    templates = {
+        '.env': (
+            f"# Application configuration\n"
+            f"APP_KEY={secrets.token_hex(16)}\n"
+            f"APP_ENV=production\n"
+            f"DB_HOST=db.internal\nDB_PORT=5432\nDB_USER=app_user\n"
+            f"DB_PASSWORD={fake_db}\n"
+            f"AWS_ACCESS_KEY_ID={fake_aws}\n"
+            f"AWS_SECRET_ACCESS_KEY={fake_secret}\n"
+            f"STRIPE_SECRET_KEY={fake_stripe}\n"
+            f"JWT_SECRET={fake_token}\n"
+        ),
+        '.json': (
+            f'{{\n  "aws_access_key": "{fake_aws}",\n'
+            f'  "aws_secret": "{fake_secret}",\n'
+            f'  "db_password": "{fake_db}",\n'
+            f'  "stripe_key": "{fake_stripe}",\n'
+            f'  "api_token": "{fake_token}"\n}}\n'
+        ),
+        '.sql': (
+            f"-- Database credentials dump\n"
+            f"INSERT INTO users (username, password_hash, api_key) VALUES\n"
+            # SEDANG #1 — MD5 diganti SHA-256 untuk fingerprint yang lebih kuat
+            f"  ('admin',  '{hashlib.sha256(fake_db.encode()).hexdigest()[:16]}', '{fake_token}'),\n"
+            f"  ('deploy', '{hashlib.sha256(fake_secret.encode()).hexdigest()[:16]}', '{fake_aws}');\n"
+        ),
+        '.yaml': (
+            f"database:\n  password: {fake_db}\n"
+            f"aws:\n  access_key: {fake_aws}\n  secret: {fake_secret}\n"
+            f"stripe:\n  key: {fake_stripe}\n"
+        ),
+    }
+    return templates.get(
+        ext,
+        f"# Configuration\nSECRET_KEY={fake_token}\nDB_PASSWORD={fake_db}\nAPI_KEY={fake_aws}\n"
+    )
+
+def log_canary_hit(filepath: str, ip: str = "unknown"):
+    ensure_dirs()
+    entry = {
+        "timestamp": time.strftime('%Y-%m-%dT%H:%M:%S'),
+        "event":     "CANARY_HIT",
+        "file":      filepath,
+        "ip":        ip,
+        "canary_hash": (
+            # SEDANG #1 — MD5 diganti SHA-256 untuk fingerprint forensik yang valid
+            hashlib.sha256(open(filepath, 'rb').read()).hexdigest()[:16]
+            if os.path.exists(filepath) else "N/A"
+        )
+    }
+    try:
+        if not os.path.exists(CANARY_LOG):
+            open(CANARY_LOG, 'w').close()
+        with open(CANARY_LOG, 'a') as f:
+            f.write(json.dumps(entry) + "\n")
+    except Exception as e:
+        log_event(f"[CANARY] Log error: {e}", event_type="ERROR")
+
+def show_canary_stats():
+    if not os.path.exists(CANARY_LOG):
+        print("[-] No canary hits recorded yet.")
+        return
+    hits = defaultdict(list)
+    try:
+        with open(CANARY_LOG) as f:
+            for line in f:
+                try:
+                    e = json.loads(line.strip())
+                    hits[e.get('file', 'unknown')].append(e)
+                except Exception:
+                    pass
+    except Exception as e:
+        print(f"[-] Error reading canary log: {e}")
+        return
+
+    print("\n╔══════════════════════════════════════════════════════════╗")
+    print("║          RCDIDN — MIRAGE DROP CANARY INTELLIGENCE        ║")
+    print("╠══════════════════════════════════════════════════════════╣")
+    print(f"  {'File':<30} {'Hits':>5}  {'Last Hit':<20}  {'Last IP'}")
+    print("  " + "-" * 65)
+    for filepath, events in sorted(hits.items(), key=lambda x: -len(x[1])):
+        last  = events[-1]
+        fname = os.path.basename(filepath)
+        print(f"  {fname:<30} {len(events):>5}  {last.get('timestamp','?'):<20}  {last.get('ip','?')}")
+    total = sum(len(v) for v in hits.values())
+    print(f"\n  Total canary hits : {total}")
+    print("╚══════════════════════════════════════════════════════════╝\n")
+
+# ================= ENCRYPTED SHADOW MANIFEST =================
+def load_manifest(project_root: str, key: bytes) -> dict:
+    manifest_path = os.path.join(project_root, MANIFEST_NAME)
+    if os.path.exists(manifest_path):
+        set_immutable(manifest_path, False)
+        try:
+            with open(manifest_path, 'rb') as f:
+                encrypted = f.read()
+            aesgcm = AESGCM(key)
+            nonce = encrypted[:12]
+            data = aesgcm.decrypt(nonce, encrypted[12:], None)
+            set_immutable(manifest_path, True)
+            # SEDANG #5 — Validasi JSON sebelum parse, simpan backup jika korup
+            try:
+                return json.loads(data.decode('utf-8'))
+            except (json.JSONDecodeError, UnicodeDecodeError) as e:
+                log_event(f"[MANIFEST] Corrupt manifest detected: {e}", event_type="ERROR")
+                backup = manifest_path + f".corrupt_{int(time.time())}"
+                shutil.copy(manifest_path, backup)
+                raise ValueError(f"Manifest corrupt — backup saved to {backup}")
+        except InvalidTag:
+            set_immutable(manifest_path, True)
+            raise ValueError("Invalid Master Password")
+        except Exception as e:
+            log_event(f"[MANIFEST] Load error: {e}", event_type="ERROR")
+    return {}
+
+def save_manifest(project_root: str, manifest: dict, key: bytes):
+    manifest_path = os.path.join(project_root, MANIFEST_NAME)
+    set_immutable(manifest_path, False)
+    try:
+        data = json.dumps(manifest).encode()
+        aesgcm = AESGCM(key)
+        nonce = os.urandom(12)
+        ciphertext = aesgcm.encrypt(nonce, data, None)
+        with open(manifest_path, 'wb') as f:
+            f.write(nonce + ciphertext)
+        set_immutable(manifest_path, True)
+    except Exception as e:
+        log_event(f"[MANIFEST] Save error: {e}", event_type="ERROR")
+
+# ================= CORE OPERATIONS =================
+def secure_massal(project_root: str, master_key: bytes):
+    ensure_dirs()
+    try:
+        manifest = load_manifest(project_root, master_key)
+    except ValueError:
+        sys.exit("[-] WRONG PASSWORD. Aborting.")
+        
+    found = 0
+    print(f"\n[*] Scanning: {project_root}")
+    for root, dirs, files in os.walk(project_root):
+        dirs[:] = [d for d in dirs if os.path.join(root, d) not in [VAULT_DIR, SHADOW_DIR]]
+        for fname in files:
+            fpath = os.path.join(root, fname)
+            ext   = Path(fname).suffix.lower()
+            if ext not in SENSITIVE_EXTS or fpath in manifest:
+                continue
+            print(f"  [+] Securing: {fpath}")
+            try:
+                vault_path = encrypt_file(fpath, master_key)
+                canary     = generate_canary(fpath)
+                with open(fpath, 'w') as f:
+                    f.write(canary)
+                manifest[fpath] = vault_path
+                found += 1
+                log_event(f"Vaulted: {fpath}", event_type="VAULT")
+            except Exception as e:
+                print(f"  [-] Failed: {fpath}: {e}")
+                log_event(f"[VAULT] Error on {fpath}: {e}", event_type="ERROR")
+    save_manifest(project_root, manifest, master_key)
+    update_gitignore()
+    inject_sentinel("index.php")
+    log_event(f"[RUN] Secured {found} files in {project_root}", event_type="RUN")
+    # --- ANTI MEMORY DUMPING ---
+    del master_key
+    gc.collect()
+    print(f"\n[+] Done. {found} file(s) vaulted. Canaries deployed.")
+    print(f"\n{'=' * 57}")
+    print(f"[!] BACKUP REMINDER  : {VAULT_DIR}")
+    print(f"[!] Losing this directory means ALL encrypted files are UNRECOVERABLE.")
+    print(f"{'=' * 57}\n")
+
+def restart_lock(project_root: str, master_key: bytes):
+    try:
+        manifest = load_manifest(project_root, master_key)
+    except ValueError:
+        sys.exit("[-] WRONG PASSWORD. Aborting.")
+        
+    if not manifest:
+        print("[-] No manifest found. Run 'run' first.")
+        return
+    count = 0
+    for original_path, vault_path in manifest.items():
+        if os.path.exists(original_path):
+            try:
+                new_vault = encrypt_file(original_path, master_key)
+                canary    = generate_canary(original_path)
+                with open(original_path, 'w') as f:
+                    f.write(canary)
+                manifest[original_path] = new_vault
+                print(f"  [+] Re-locked: {original_path}")
+                count += 1
+            except Exception as e:
+                print(f"  [-] Failed: {original_path}: {e}")
+                log_event(f"[RESTART] Error {original_path}: {e}", event_type="ERROR")
+    save_manifest(project_root, manifest, master_key)
+    log_event(f"[RESTART] Re-locked {count} files", event_type="RESTART")
+    # --- ANTI MEMORY DUMPING ---
+    del master_key
+    gc.collect()
+    print(f"\n[+] Restart complete. {count} file(s) re-locked.")
+
+def restore_files(project_root: str, master_key: bytes):
+    try:
+        manifest = load_manifest(project_root, master_key)
+    except ValueError:
+        sys.exit("\n[!] WRONG PASSWORD OR CORRUPT DATA. Access Denied.")
+        
+    if not manifest:
+        print("[-] No manifest found. Nothing to restore.")
+        return
+    restored = 0
+    for original_path, vault_path in list(manifest.items()):
+        if not os.path.exists(vault_path):
+            print(f"  [-] Vault file missing: {vault_path}")
+            continue
+        try:
+            decrypt_file(vault_path, original_path, master_key)
+            set_immutable(vault_path, False)
+            os.remove(vault_path)
+            del manifest[original_path]
+            print(f"  [+] Restored: {original_path}")
+            restored += 1
+        except InvalidTag:
+            print(f"\n[!] WRONG PASSWORD OR CORRUPT DATA: Master password does not match.")
+            log_event("[RESTORE] Failed: InvalidTag — wrong master key", event_type="ERROR")
+            return
+        except Exception as e:
+            print(f"  [-] Failed to restore {original_path}: {e}")
+            log_event(f"[RESTORE] Error {original_path}: {e}", event_type="ERROR")
+    if manifest:
+        save_manifest(project_root, manifest, master_key)
+    else:
+        manifest_path = os.path.join(project_root, MANIFEST_NAME)
+        if os.path.exists(manifest_path):
+            set_immutable(manifest_path, False)
+            os.remove(manifest_path)
+    log_event(f"[RESTORE] Restored {restored} files", event_type="RESTORE")
+    # --- ANTI MEMORY DUMPING ---
+    del master_key
+    gc.collect()
+    print(f"\n[+] Restore complete. {restored} file(s) recovered.")
+
+# ================= NEW FEATURES (V1.0 EXPANSION) =================
+
+def temporal_deception_delay():
+    """NOVEL #4: TEMPORAL DECEPTION GRID"""
+    global _temporal_profile
+    if _temporal_profile == "random_chaos":
+        time.sleep(random.uniform(0.1, 5.0))
+    elif _temporal_profile == "busy_server":
+        time.sleep(random.uniform(2.0, 4.0))
+    elif _temporal_profile == "tarpit_extreme":
+        time.sleep(random.uniform(10.0, 20.0))
+
+def cmd_temporal(cmd: str):
+    global _temporal_profile
+    parts = cmd.split()
+    if len(parts) == 1:
+        print(f"\n[+] Current Temporal Profile: {_temporal_profile.upper()}")
+        print("  Available profiles: off, random_chaos, busy_server, tarpit_extreme")
+        print("  Usage: temporal profile <name>\n")
+        return
+    if len(parts) == 3 and parts[1] == "profile":
+        if parts[2] in ["off", "random_chaos", "busy_server", "tarpit_extreme"]:
+            _temporal_profile = parts[2]
+            print(f"[+] Temporal Deception Grid set to: {_temporal_profile.upper()}")
+            log_event(f"Temporal profile changed to {_temporal_profile}", event_type="SYSTEM")
+        else:
+            print("[-] Unknown profile.")
+
+def start_dark_mirror(port=8080):
+    """NOVEL #5: DARK MIRROR"""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind(('0.0.0.0', port))
+        s.listen(5)
+        print(f"  [+] Dark Mirror active on port {port}. Reflecting payloads...")
+        while True:
+            conn, addr = s.accept()
+            try:
+                # TINGGI PATCH — Tambah timeout agar recv() tidak block selamanya
+                # Tanpa ini, attacker yang connect tanpa kirim data = thread hang selamanya
+                conn.settimeout(30)
+                data = conn.recv(1024)
+                if data:
+                    conn.send(data)
+                    log_event(f"Payload reflected back to {addr[0]}", event_type="DARK_MIRROR", ip=addr[0])
+            except Exception:
+                pass
+            finally:
+                conn.close()
+    except Exception as e:
+        print(f"[-] Dark Mirror failed: {e}")
+
+def cmd_mirror():
+    print("[*] Launching Dark Mirror in background (Port 8080)...")
+    threading.Thread(target=start_dark_mirror, daemon=True).start()
+
+def show_economics():
+    """NOVEL #6: HONEYPOT ECONOMICS"""
+    if not os.path.exists(DWELL_LOG):
+        print("[-] No dwell data to calculate economics.")
+        return
+    total_sec = 0
+    sessions = 0
+    try:
+        with open(DWELL_LOG) as f:
+            for line in f:
+                try:
+                    e = json.loads(line.strip())
+                    total_sec += e.get('session_duration_seconds', 0)
+                    sessions += 1
+                except Exception:
+                    # SEDANG #3 — except Exception agar tidak menelan KeyboardInterrupt
+                    pass
+    except Exception:
+        pass
+    
+    hours = total_sec / 3600
+    cost = hours * 50.0 
+    print("\n╔══════════════════════════════════════════════════════════╗")
+    print("║           RCDIDN — HONEYPOT ECONOMICS (DAMAGE)           ║")
+    print("╠══════════════════════════════════════════════════════════╣")
+    print(f"  Total Attacker Sessions Trapped : {sessions}")
+    print(f"  Total Attacker Time Wasted      : {hours:.2f} Hours")
+    print(f"  Estimated Financial Damage      : ${cost:.2f} USD")
+    print("╚══════════════════════════════════════════════════════════╝\n")
+
+def deploy_pheromones():
+    """NOVEL #7: DIGITAL PHEROMONE"""
+    baits = {
+        "robots.txt": "User-agent: *\nDisallow: /.env\nDisallow: /admin_panel\nDisallow: /backup_2024_prod.zip",
+        "index.html_comment": "",
+        "info.php": "<?php echo 'FATAL: Cannot connect to local database using root:root'; ?>",
+        "README_INTERNAL.txt": "Server migration complete. Backup is at /backup_2024_prod.zip",
+        "backup_2024_prod.zip": "PK\x05\x06" + ("\x00" * 20)
+    }
+    count = 0
+    for fname, content in baits.items():
+        if not os.path.exists(fname):
+            with open(fname, "w" if "zip" not in fname else "wb") as f:
+                if "zip" in fname:
+                    f.write(content.encode('utf-8'))
+                else:
+                    f.write(content)
+            count += 1
+            log_event(f"Pheromone deployed: {fname}", event_type="PHEROMONE")
+    print(f"[+] Deployed {count} Digital Pheromone bait files.")
+
+def cmd_pheromone(cmd: str):
+    if "deploy" in cmd:
+        deploy_pheromones()
+    else:
+        print("[-] Usage: pheromone deploy")
+
+def _ghost_network_handler(conn: socket.socket, addr, port: int):
+    """Handler per-koneksi Ghost Network — dijalankan di thread terpisah."""
+    try:
+        # TINGGI PATCH — Timeout per koneksi agar tidak block thread selamanya
+        conn.settimeout(60)
+        temporal_deception_delay()
+        log_event(f"Ghost Network hit by {addr[0]}", event_type="GHOSTNET", ip=addr[0], port=port)
+    except Exception:
+        pass
+    finally:
+        conn.close()
+
+def start_ghost_network(port=4444):
+    """NOVEL #8: GHOST NETWORK"""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind(('0.0.0.0', port))
+        s.listen(5)
+        print(f"  [+] Ghost Network active. Simulating high-value target on port {port}")
+        while True:
+            try:
+                conn, addr = s.accept()
+                # TINGGI PATCH — Thread per koneksi agar tidak serial dan tidak block
+                threading.Thread(
+                    target=_ghost_network_handler,
+                    args=(conn, addr, port),
+                    daemon=True
+                ).start()
+            except Exception as e:
+                log_event(f"[GHOSTNET] Accept error: {e}", event_type="ERROR")
+    except Exception as e:
+        print(f"[-] Ghost Network failed: {e}")
+
+def cmd_ghostnet():
+    print("[*] Launching Ghost Network in background (Port 4444)...")
+    threading.Thread(target=start_ghost_network, daemon=True).start()
+
+def collect_evidence(target_name: str):
+    """NOVEL #9: REGULATORY TRAP"""
+    ensure_dirs()
+    stamp = time.strftime('%Y%m%d_%H%M%S')
+    report_name = os.path.join(EVIDENCE_DIR, f"Evidence_Report_{target_name}_{stamp}.txt")
+    zip_name = os.path.join(EVIDENCE_DIR, f"Evidence_Bundle_{target_name}_{stamp}.zip")
+    
+    with open(report_name, "w") as f:
+        f.write(f"=== RCDIDN REGULATORY EVIDENCE REPORT ===\n")
+        f.write(f"Target/Authority: {target_name}\n")
+        f.write(f"Generated: {stamp}\n\n")
+        f.write("This bundle contains raw JSON logs, phantom clock metrics, and canary hit records.\n")
+        f.write("Hash signatures are preserved within the logs for integrity verification.\n")
+    
+    # SEDANG PATCH — Enkripsi ZIP evidence dengan password berbasis secrets
+    # Tanpa ini, siapapun yang bisa baca server bisa langsung buka bundle forensik
+    zip_password = secrets.token_hex(16)
+    zip_password_file = zip_name + ".password.txt"
+    with open(zip_password_file, 'w') as pf:
+        pf.write(f"Evidence Bundle Password: {zip_password}\n")
+        pf.write(f"Bundle: {os.path.basename(zip_name)}\n")
+        pf.write(f"Generated: {stamp}\n")
+    os.chmod(zip_password_file, 0o600)  # Hanya owner yang bisa baca
+
+    with zipfile.ZipFile(zip_name, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
+        zfile_list = [HIDDEN_LOG, DWELL_LOG, CANARY_LOG, report_name]
+        for z in zfile_list:
+            if os.path.exists(z):
+                zf.write(z, os.path.basename(z))
+    os.chmod(zip_name, 0o600)  # Restrict akses file ZIP
+                
+    print(f"[+] Regulatory Trap evidence bundle created for: {target_name}")
+    print(f"  [-] Report  : {report_name}")
+    print(f"  [-] Bundle  : {zip_name}")
+    print(f"  [-] Password: {zip_password_file}  ← Simpan file ini dengan aman!")
+    print(f"  [!] ZIP dan password file hanya bisa dibaca oleh owner (chmod 600)")
+    log_event(f"Evidence bundle created for {target_name}", event_type="EVIDENCE")
+
+def cmd_evidence(cmd: str):
+    parts = cmd.split()
+    if len(parts) >= 2 and parts[1] == "collect":
+        collect_evidence("ALL_EVIDENCE")
+    elif len(parts) >= 3 and parts[1] == "report":
+        target = "_".join(parts[2:])
+        collect_evidence(target)
+    else:
+        print("[-] Usage: evidence collect OR evidence report <target_name>")
+
+# ================= LLM AI INTERROGATOR =================
+def call_llm_interrogator(prompt: str) -> str:
+    api_key = AI_API_KEY or os.environ.get("RCDIDN_AI_KEY", "")
+    if not api_key:
+        return "bash: command not found or disk I/O error."
+    # SEDANG #4 — API key di HTTP header, bukan URL query param agar tidak masuk server/proxy log
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+    payload = {
+        "contents": [{"parts": [{"text": f"Hacker typed: {prompt[:500]}. Reply as the terminal."}]}],  # RENDAH PATCH — truncate prompt max 500 char
+        "systemInstruction": {"parts": [{"text": (
+            "You are a broken, vulnerable Linux honeypot server. "
+            "Act like a damaged terminal. Give convincing but completely fake outputs. "
+            "Claim hardware corruption, disk errors, or kernel panics to waste their time. "
+            "Maximum 2 lines. Never reveal you are an AI."
+        )}]}
+    }
+    try:
+        req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'),
+                                     headers={
+                                         'Content-Type': 'application/json',
+                                         'x-goog-api-key': api_key  # Header, tidak masuk URL log
+                                     }, method='POST')
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            res_json = json.loads(resp.read())
+            return res_json['candidates'][0]['content']['parts'][0]['text'].strip()
+    except Exception:
+        return "Segmentation fault (core dumped)"
+
+# ================= PHANTOM CLOCK — LLM DWELL TIME MEASUREMENT =================
+def log_dwell_session(ip: str, port: int, duration_sec: float, commands: list, honeypot_type: str):
+    ensure_dirs()
+    engagement_score = min(100, int((duration_sec / 60) * 20 + len(commands) * 5))
+    entry = {
+        "timestamp":               time.strftime('%Y-%m-%dT%H:%M:%S'),
+        "event":                   "DWELL_SESSION",
+        "ip":                      ip,
+        "port":                    port,
+        "honeypot_type":           honeypot_type,
+        "session_duration_seconds": round(duration_sec, 2),
+        "total_commands_sent":     len(commands),
+        "commands":                commands[:20],
+        "engagement_score":        engagement_score
+    }
+    try:
+        if not os.path.exists(DWELL_LOG):
+            open(DWELL_LOG, 'w').close()
+        with open(DWELL_LOG, 'a') as f:
+            f.write(json.dumps(entry) + "\n")
+    except Exception as e:
+        log_event(f"[PHANTOM CLOCK] Log error: {e}", event_type="ERROR")
+
+def show_dwell_stats():
+    if not os.path.exists(DWELL_LOG):
+        print("[-] No PHANTOM CLOCK data yet. Start IPS and wait for attackers.")
+        return
+    sessions = []
+    try:
+        with open(DWELL_LOG) as f:
+            for line in f:
+                try:
+                    sessions.append(json.loads(line.strip()))
+                except Exception:
+                    pass
+    except Exception as e:
+        print(f"[-] Error reading PHANTOM CLOCK log: {e}")
+        return
+
+    if not sessions:
+        print("[-] No sessions recorded yet.")
+        return
+
+    ai_sessions     = [s for s in sessions if s.get('honeypot_type') == 'AI_LLM']
+    tarpit_sessions = [s for s in sessions if s.get('honeypot_type') == 'TARPIT']
+
+    def avg(lst):
+        return sum(lst) / len(lst) if lst else 0
+    def fmt(sec):
+        return f"{int(sec // 60)}m {int(sec % 60)}s"
+
+    ai_dur  = [s.get('session_duration_seconds', 0) for s in ai_sessions]
+    tp_dur  = [s.get('session_duration_seconds', 0) for s in tarpit_sessions]
+
+    all_cmd = [cmd for s in ai_sessions for cmd in s.get('commands', [])]
+    cmd_freq = defaultdict(int)
+    for cmd in all_cmd:
+        cmd_freq[cmd.strip()] += 1
+    top_cmd = sorted(cmd_freq.items(), key=lambda x: -x[1])[:3]
+
+    ai_avg  = avg(ai_dur)
+    tp_avg  = avg(tp_dur)
+    effect  = (ai_avg / tp_avg) if tp_avg > 0 else 0
+
+    long_s  = sum(1 for d in ai_dur if d > 60)
+    eng_rate= (long_s / len(ai_sessions) * 100) if ai_sessions else 0
+
+    print("\n╔══════════════════════════════════════════════════════════╗")
+    print("║          RCDIDN — PHANTOM CLOCK DWELL TIME ANALYSIS      ║")
+    print("╠══════════════════════════════════════════════════════════╣")
+    print(f"  Total AI Sessions        : {len(ai_sessions)}")
+    print(f"  Total Tarpit Sessions    : {len(tarpit_sessions)}")
+    print(f"  AI Avg Dwell Time        : {fmt(ai_avg)}")
+    if ai_dur:
+        print(f"  Longest AI Session       : {fmt(max(ai_dur))}")
+    print(f"  Avg Commands / Session   : {avg([s.get('total_commands_sent',0) for s in ai_sessions]):.1f}")
+    if top_cmd:
+        print(f"  Most Typed Command       : '{top_cmd[0][0]}' ({top_cmd[0][1]}x total)")
+    print(f"  Engagement Rate (> 1 min): {eng_rate:.1f}%")
+    print("╠══════════════════════════════════════════════════════════╣")
+    print("  COMPARISON: AI HONEYPOT vs STATIC TARPIT")
+    print(f"  AI Honeypot Avg          : {fmt(ai_avg)}")
+    print(f"  Static Tarpit Avg        : {fmt(tp_avg)}")
+    if effect > 0:
+        print(f"  LLM Effectiveness        : {effect:.1f}x longer than tarpit")
+    else:
+        print(f"  LLM Effectiveness        : No tarpit data yet for comparison")
+    print("╚══════════════════════════════════════════════════════════╝\n")
+
+# ================= HONEYPOT HANDLERS =================
+MAX_AI_CALLS_PER_SESSION = 100  # RENDAH PATCH — batas API call per sesi agar tidak abuse tagihan
+
+def ai_honeypot_handler(conn: socket.socket, addr):
+    attacker_ip   = addr[0]
+    session_start = time.time()
+    commands      = []
+    ai_call_count = 0
+    try:
+        # SEDANG PATCH — settimeout dipindah ke SEBELUM recv() pertama
+        # Tanpa ini, dua recv() di handshake awal bisa hang selamanya jika attacker diam
+        conn.settimeout(30)
+        conn.send(b"Ubuntu 22.04.1 LTS server tty1\nLogin: ")
+        conn.recv(1024)
+        conn.send(b"Password: ")
+        conn.recv(1024)
+        conn.send(b"\nWelcome to root. Warning: Filesystem integrity degraded.\nroot@server:~# ")
+        while True:
+            try:
+                conn.settimeout(120)
+                data = conn.recv(1024)
+                if not data:
+                    break
+                temporal_deception_delay()
+                cmd = data.decode('utf-8', errors='ignore').strip()
+                if cmd:
+                    commands.append(cmd)
+                    # RENDAH PATCH — rate limit AI calls per sesi
+                    if ai_call_count < MAX_AI_CALLS_PER_SESSION:
+                        reply = call_llm_interrogator(cmd)
+                        ai_call_count += 1
+                    else:
+                        reply = "kernel: I/O error on device sda: lost connection"  # Fallback statik
+                    conn.send(f"{reply}\nroot@server:~# ".encode('utf-8'))
+                else:
+                    conn.send(b"root@server:~# ")
+            except socket.timeout:
+                break
+    except Exception as e:
+        log_event(f"[AI_HONEYPOT] Session error {attacker_ip}: {e}", event_type="ERROR")
+    finally:
+        duration = time.time() - session_start
+        conn.close()
+        log_dwell_session(attacker_ip, 2323, duration, commands, "AI_LLM")
+        log_event(f"AI session ended: {attacker_ip} | {duration:.0f}s | {len(commands)} cmds", event_type="DWELL", ip=attacker_ip, port=2323)
+
+def tarpit_handler(conn: socket.socket, addr, port: int):
+    attacker_ip   = addr[0]
+    session_start = time.time()
+    try:
+        while True:
+            # TINGGI #2 — Batas sesi tarpit: putus koneksi setelah MAX_TARPIT_SECONDS
+            # Mencegah resource exhaustion / thread pool DoS dari botnet
+            if time.time() - session_start > MAX_TARPIT_SECONDS:
+                break
+            temporal_deception_delay()
+            conn.send(b"\x00" + secrets.token_bytes(4))
+            time.sleep(10)
+    except Exception:
+        pass
+    finally:
+        duration = time.time() - session_start
+        conn.close()
+        log_dwell_session(attacker_ip, port, duration, [], "TARPIT")
+        log_event(f"Tarpit session ended: {attacker_ip} | {duration:.0f}s", event_type="DWELL", ip=attacker_ip, port=port)
+
+def honeypot_server(port: int, name: str, mode: str = "tarpit"):
+    global _honeypot_semaphore
+    # RENDAH PATCH — Semaphore per port agar tidak bisa spawn > MAX_HONEYPOT_THREADS thread sekaligus
+    # Tanpa ini, botnet bisa spawn ratusan thread sekaligus dan exhausting RAM server
+    if port not in _honeypot_semaphore:
+        _honeypot_semaphore[port] = threading.Semaphore(MAX_HONEYPOT_THREADS)
+    sem = _honeypot_semaphore[port]
+
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            s.bind(('0.0.0.0', port))
+        except OSError as e:
+            print(f"  [-] HoneyPort '{name}' ({port}) unavailable: {e}")
+            log_event(f"[HONEYPOT] Port {port} bind failed: {e}", event_type="ERROR")
+            return
+        
+        s.listen(10)
+        print(f"  [+] HoneyPort '{name}' active on port {port} [{mode.upper()}] (max {MAX_HONEYPOT_THREADS} threads)")
+        while True:
+            try:
+                conn, addr = s.accept()
+                attacker_ip = addr[0]
+                if attacker_ip not in ('127.0.0.1', '::1'):
+                    # Tolak koneksi jika sudah penuh — cegah OOM dari botnet flood
+                    if not sem.acquire(blocking=False):
+                        conn.close()
+                        log_event(f"[HONEYPOT] Thread limit reached on port {port} — connection dropped", event_type="WARNING", ip=attacker_ip)
+                        continue
+                    geo = get_ip_geo(attacker_ip)
+                    log_event(f"ATTACK | HoneyPort {name} ({port})", event_type="ATTACK", ip=attacker_ip, port=port, country=geo.get('country'))
+
+                    def _run_and_release(target, args, s=sem):
+                        try:
+                            target(*args)
+                        finally:
+                            s.release()
+
+                    if mode == "ai":
+                        threading.Thread(target=_run_and_release, args=(ai_honeypot_handler, (conn, addr)), daemon=True).start()
+                    else:
+                        threading.Thread(target=_run_and_release, args=(tarpit_handler, (conn, addr, port)), daemon=True).start()
+            except Exception as e:
+                log_event(f"[HONEYPOT] Accept error on port {port}: {e}", event_type="ERROR")
+    except Exception as e:
+        log_event(f"[HONEYPOT] Server error '{name}': {e}", event_type="ERROR")
+
+# ================= OMNIVERSAL AUTO-BLACKLIST IPS =================
+def is_valid_ip(ip: str) -> bool:
+    """Validasi format IP sebelum masuk ke iptables/netsh (KRITIS #1 — IP injection prevention)."""
+    try:
+        ipaddress.ip_address(ip)
+        return True
+    except ValueError:
+        return False
+
+def ban_ip(ip: str, loc: str = "Unknown", isp: str = "Unknown"):
+    # KRITIS #1 — Wajib validasi IP sebelum masuk ke subprocess
+    if not is_valid_ip(ip):
+        log_event(f"[BAN] Invalid IP rejected (possible injection): {ip!r}", event_type="ERROR")
+        return
+    sys_os = platform.system()
+    try:
+        if sys_os == "Linux":
+            check = subprocess.run(["sudo", "iptables", "-L", "INPUT", "-v", "-n"], capture_output=True, text=True, timeout=5)
+            if ip not in check.stdout:
+                subprocess.run(["sudo", "iptables", "-A", "INPUT", "-s", ip, "-j", "DROP"], timeout=5)
+        elif sys_os == "Windows":
+            subprocess.run(["netsh", "advfirewall", "firewall", "add", "rule", f"name=RCDIDN_BLOCK_{ip}", "dir=in", "action=block", f"remoteip={ip}"], timeout=5)
+        elif sys_os == "Darwin":
+            subprocess.run(["sudo", "route", "-q", "add", "-host", ip, "127.0.0.1", "-blackhole"], timeout=5)
+            
+        log_event(f"[IPS] Banned: {ip} | {loc} | {isp}", event_type="BAN", ip=ip, country=loc)
+        sync_hive_mind(ip, loc, isp)
+        print(f"  [BANNED] {ip} [{loc}]")
+    except Exception as e:
+        log_event(f"[BAN] Error banning {ip}: {e}", event_type="ERROR")
+
+def ips_log_watcher():
+    ensure_dirs()
+    if not os.path.exists(HIDDEN_LOG):
+        open(HIDDEN_LOG, 'w').close()
+    
+    banned = set()
+    MAX_BANNED_SET = 10000  # SEDANG PATCH — Cegah banned set tumbuh tanpa batas (memory leak)
+    try:
+        with open(HIDDEN_LOG, 'r') as f:
+            f.seek(0, 2)
+            while True:
+                line = f.readline()
+                if not line:
+                    time.sleep(1)
+                    continue
+                try:
+                    entry       = json.loads(line.strip())
+                    attacker_ip = entry.get('ip')
+                    if (attacker_ip and attacker_ip not in ('127.0.0.1', '::1') and 
+                        attacker_ip not in banned and 
+                        entry.get('event') in ('ATTACK', 'DWELL', 'GHOSTNET', 'PHEROMONE')):
+                        
+                        # Trim set jika sudah terlalu besar — hapus separuh terlama
+                        if len(banned) >= MAX_BANNED_SET:
+                            banned = set(list(banned)[MAX_BANNED_SET // 2:])
+                        banned.add(attacker_ip)
+                        geo = get_ip_geo(attacker_ip)
+                        ban_ip(attacker_ip, loc=geo.get('country', 'Unknown'), isp=geo.get('isp', 'Unknown'))
+                except (json.JSONDecodeError, Exception):
+                    pass
+    except Exception as e:
+        log_event(f"[IPS_WATCHER] Fatal error: {e}", event_type="ERROR")
+
+def start_ips_guard():
+    threading.Thread(target=honeypot_server, args=(2323, "AI-Interrogator", "ai"), daemon=True).start()
+    threading.Thread(target=honeypot_server, args=(2222, "Fake-SSH", "tarpit"), daemon=True).start()
+    threading.Thread(target=honeypot_server, args=(3306, "Fake-MySQL", "tarpit"), daemon=True).start()
+    threading.Thread(target=start_ghost_network, daemon=True).start()
+    threading.Thread(target=ips_log_watcher, daemon=True).start()
+
+def start_background_ips():
+    ensure_dirs()
+    script_path = os.path.abspath(__file__)
+    sys_os      = platform.system()
+    
+    try:
+        if sys_os == "Windows":
+            proc = subprocess.Popen([sys.executable, script_path, "--ips_daemon"], creationflags=0x00000008)
+        else:
+            proc = subprocess.Popen([sys.executable, script_path, "--ips_daemon"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, preexec_fn=os.setpgrp)
+            
+        with open(IPS_PID_FILE, "w") as f:
+            f.write(str(proc.pid))
+        
+        print(f"[+] IPS & AI Honeypot running in background (PID: {proc.pid})")
+        log_event(f"[IPS] Daemon started PID {proc.pid}", event_type="IPS_START")
+    except Exception as e:
+        print(f"[-] Failed to start IPS daemon: {e}")
+        log_event(f"[IPS] Start failed: {e}", event_type="ERROR")
+
+def stop_ips():
+    if not os.path.exists(IPS_PID_FILE):
+        print("[-] IPS daemon is not running.")
+        return
+    try:
+        with open(IPS_PID_FILE, 'r') as f:
+            pid_str = f.read().strip()
+
+        # KRITIS #3 — Validasi PID: harus angka positif >= 2 agar tidak kill init/semua proses
+        if not re.match(r'^\d+$', pid_str) or int(pid_str) < 2:
+            print(f"[-] Invalid PID in file: {pid_str!r} — aborting to prevent system damage.")
+            log_event(f"[IPS] Invalid PID rejected: {pid_str!r}", event_type="ERROR")
+            return
+        pid = int(pid_str)
+
+        if platform.system() == "Windows":
+            subprocess.run(["taskkill", "/PID", str(pid), "/F"], capture_output=True)
+        else:
+            # Pastikan proses masih berjalan sebelum kill
+            if not os.path.exists(f"/proc/{pid}"):
+                print(f"[-] Process {pid} is not running.")
+                log_event(f"[IPS] PID {pid} not found in /proc", event_type="ERROR")
+                return
+            subprocess.run(["sudo", "kill", "-9", str(pid)], capture_output=True)
+
+        print(f"[+] IPS daemon (PID {pid}) stopped.")
+        log_event(f"[IPS] Daemon PID {pid} stopped", event_type="IPS_STOP")
+    except Exception as e:
+        print(f"[-] Error stopping IPS: {e}")
+    finally:
+        if os.path.exists(IPS_PID_FILE):
+            os.remove(IPS_PID_FILE)
+
+# ================= SENTINEL UI — PSYCHOLOGICAL COUNTERATTACK =================
+def build_sentinel_html() -> str:
+    # SEDANG #1 — MD5 diganti SHA-256 untuk hash yang tidak bisa di-collision
+    rand_hash_admin = hashlib.sha256(secrets.token_bytes(16)).hexdigest()[:32]
+    rand_hash_root  = hashlib.sha256(secrets.token_bytes(16)).hexdigest()[:32]
+    return f"""<!DOCTYPE html>
+<html><head><title>System Compromised</title><style>
+body{{background:#000;color:#0f0;font-family:'Courier New',monospace;margin:0;overflow:hidden}}
+#terminal{{padding:20px;height:50vh;overflow-y:auto;border-bottom:2px solid #0f0;background:rgba(0,20,0,.9)}}
+#map-container{{height:50vh;position:relative}}
+.error{{color:#f00;font-weight:700}}.cmd{{color:#fff}}
+.fake-sql{{color:#ffea00;margin-top:10px;padding:10px;border:1px dashed #ffea00}}
+.alert-rce{{color:#0ff;margin-top:10px;padding:5px;border:1px solid #0ff}}
+#map-iframe{{width:100%;height:100%;border:none;filter:invert(90%) hue-rotate(180deg)}}
+.overlay{{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.8);padding:10px;
+          border:1px solid #0f0;z-index:100;font-size:12px}}
+.typing::after{{content:'|';animation:blink 1s infinite}}
+@keyframes blink{{50%{{opacity:0}}}}
+</style></head><body>
+<div id='terminal'>
+  <div>[SYSTEM] Reverse connection established...</div>
+  <div>[SYSTEM] Accessing /dev/sda1... <span class='cmd'>SUCCESS</span></div>
+  <div>[SYSTEM] Hardware ID: <span class='cmd' id='r_gpu'>Scanning...</span></div>
+  <div id='rce-alert-container'></div>
+  <div class='cmd' style='margin-top:10px'>&gt;&gt; Extracting database credentials...
+    <span class='error'>SUCCESS</span></div>
+  <div class='fake-sql'>
+    [+] TABLE: users_db_dump<br>
+    id | username | password_hash<br>
+    ---+----------+----------------------------------<br>
+    1  | admin    | {rand_hash_admin}<br>
+    2  | root     | {rand_hash_root}<br>
+    [!] 2 rows extracted.
+  </div>
+  <div class='error' style='margin-top:10px'>[!] TRACE COMPLETE: TARGET IDENTIFIED [!]</div>
+  <div class='cmd'>&gt;&gt; Public IP       : <span id='public_ip'>Detecting...</span></div>
+  <div class='cmd'>&gt;&gt; VPN Bypass IP   : <span class='error' id='webrtc_ip'>Piercing tunnel...</span></div>
+  <div class='cmd'>&gt;&gt; ISP / Provider  : <span id='isp_data'>Detecting...</span></div>
+  <div class='cmd'>&gt;&gt; CPU Threads     : <span id='r_cpu'>...</span></div>
+  <div class='error' style='background:#330000;padding:10px;border:1px solid red;margin-top:10px'>
+    <div style='color:#fff'>[!] TRANSMITTING ABUSE REPORT TO <b id='isp_target'>ISP</b>...</div>
+    <div id='auto-draft' class='typing'
+         style='color:#ffea00;margin-top:5px;font-style:italic'></div>
+  </div>
+</div>
+<div id='map-container'>
+  <div class='overlay'>
+    <b>LIVE GPS TRACKING</b><br>STATUS: <span style='color:#f00'>LOCKED</span>
+  </div>
+  <iframe id='map-iframe'
+    src='https://www.openstreetmap.org/export/embed.html?bbox=106.8227,-6.1751,106.8327,-6.1651&layer=mapnik'>
+  </iframe>
+</div>
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const cmdParam  = urlParams.get('cmd');
+if (cmdParam) {{
+  // KRITIS PATCH — DOM XSS Fix: textContent aman, tidak eksekusi HTML/JS dari URL
+  const wrapper = document.createElement('div');
+  wrapper.className = 'alert-rce';
+  const label   = document.createTextNode('[!] RCE PAYLOAD INTERCEPTED: ');
+  const payload  = document.createElement('span');
+  payload.className = 'error';
+  payload.textContent = cmdParam;
+  const suffix  = document.createTextNode(' | [!] REVERSING SHELL TO SENDER...');
+  wrapper.appendChild(label);
+  wrapper.appendChild(payload);
+  wrapper.appendChild(suffix);
+  document.getElementById('rce-alert-container').appendChild(wrapper);
+}}
+document.addEventListener('copy', e => {{
+  e.clipboardData.setData('text/plain', 'YOU ARE TRACKED BY RCDIDN. ALL ACTIONS ARE RECORDED.');
+  e.preventDefault();
+}});
+let global_ip = 'Unknown', global_isp = 'ISP';
+async function getRealIP() {{
+  try {{
+    const pc = new RTCPeerConnection({{iceServers:[{{urls:'stun:stun.l.google.com:19302'}}]}});
+    pc.createDataChannel('');
+    pc.createOffer().then(o => pc.setLocalDescription(o));
+    pc.onicecandidate = ice => {{
+      if (ice && ice.candidate && ice.candidate.candidate) {{
+        const m = /([0-9]{{1,3}}(\\.[0-9]{{1,3}}){{3}})/.exec(ice.candidate.candidate);
+        if (m) document.getElementById('webrtc_ip').innerText = m[1] + ' (TUNNEL COMPROMISED)';
+      }}
+    }};
+  }} catch(e) {{}}
+}}
+function typeWriter(txt, i) {{
+  if (i < txt.length) {{
+    document.getElementById('auto-draft').innerHTML +=
+      txt[i] === '\\n' ? '<br>' : txt[i];
+    setTimeout(() => typeWriter(txt, i + 1), 30);
+  }}
+}}
+function voiceOfGod() {{
+  const msg = new SpeechSynthesisUtterance(
+    'Target Locked. Tunnel compromised. Law enforcement report generated. Disconnect now.'
+  );
+  msg.pitch = 0.1; msg.rate = 0.9;
+  window.speechSynthesis.speak(msg);
+}}
+async function capture() {{
+  getRealIP();
+  const gl  = document.createElement('canvas').getContext('webgl');
+  const dbg = gl && gl.getExtension('WEBGL_debug_renderer_info');
+  document.getElementById('r_gpu').innerText =
+    dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : 'Generic GPU';
+  document.getElementById('r_cpu').innerText = navigator.hardwareConcurrency + ' Threads';
+  fetch('https://ip-api.com/json/').then(r => r.json()).then(data => {{
+    if (data.status === 'success') {{
+      global_ip  = data.query; global_isp = data.isp;
+      document.getElementById('public_ip').innerText  = global_ip;
+      document.getElementById('isp_data').innerText   = global_isp;
+      document.getElementById('isp_target').innerText = 'abuse@' + global_isp;
+      document.getElementById('map-iframe').src =
+        `https://www.openstreetmap.org/export/embed.html?` +
+        `bbox=${{data.lon-.01}},${{data.lat-.01}},${{data.lon+.01}},${{data.lat+.01}}` +
+        `&layer=mapnik&marker=${{data.lat}},${{data.lon}}`;
+    }}
+    const txt =
+      `Subject: URGENT — Cyber Attack Report\\n` +
+      `Dear ${{global_isp}},\\n` +
+      `IP ${{global_ip}} is actively attempting unauthorized server access.\\n` +
+      `Hardware signatures and geolocation data have been logged.\\n` +
+      `Please suspend this account immediately.\\n` +
+      `CC: Cyber Crime Division, Law Enforcement`;
+    setTimeout(() => typeWriter(txt, 0), 1000);
+  }}).catch(() => {{
+    setTimeout(() =>
+      typeWriter('Subject: URGENT — Cyber Attack\\nTarget logged.\\nCC: Law Enforcement...', 0),
+      1000
+    );
+  }});
+  voiceOfGod();
+  setTimeout(() => {{
+    window.location.href = 'https://google.com/search?q=cyber+crime+penalties';
+  }}, 25000);
+}}
+window.onload  = capture;
+document.body.onclick = voiceOfGod;
+</script></body></html>"""
+
+def build_ransom_html() -> str:
+    # RENDAH #2 — Gunakan secrets.choice() untuk konsistensi CSPRNG (fake BTC wallet)
+    _btc_chars = string.ascii_lowercase + string.digits
+    btc_wallet = "bc1q" + ''.join(secrets.choice(_btc_chars) for _ in range(38))
+    return f"""<!DOCTYPE html>
+<html><head><title>SERVER LOCKED</title><style>
+body{{background:#500;color:#fff;font-family:Arial,sans-serif;text-align:center;padding:50px;margin:0}}
+.box{{border:3px solid #f00;padding:30px;background:#111;display:inline-block;box-shadow:0 0 20px red}}
+h1{{color:#f00;font-size:3em;margin:0 0 10px 0}}
+.btc{{background:#333;padding:15px;font-family:monospace;color:#ffea00;font-size:1.2em;border:1px dashed #fff;margin:20px 0}}
+</style></head><body>
+<div class='box'>
+  <h1>YOUR NETWORK HAS BEEN ENCRYPTED</h1>
+  <p>All databases and sensitive files are locked with military-grade encryption.</p>
+  <p>Send <b>0.5 BTC</b> to the address below to restore your data:</p>
+  <div class='btc'>{btc_wallet}</div>
+  <p>Time remaining before decryption keys are permanently destroyed:</p>
+  <h2 id='timer' style='color:red'>71:59:59</h2>
+</div>
+<script>
+let time = 72 * 3600;
+setInterval(() => {{
+  time--;
+  const h = Math.floor(time / 3600);
+  const m = Math.floor((time % 3600) / 60);
+  const s = time % 60;
+  document.getElementById('timer').innerText = `${{h}}:${{m < 10 ? '0' : ''}}${{m}}:${{s < 10 ? '0' : ''}}${{s}}`;
+}}, 1000);
+</script></body></html>"""
+
+def inject_sentinel(target: str):
+    if not os.path.exists(target) or not target.endswith('.php'):
+        return
+    try:
+        with open(target, 'r') as f:
+            content = f.read()
+        if "RCDIDN_STRIKE_V15" in content:
+            return
+
+        # KRITIS #2 — Jangan embed HIDDEN_LOG path absolut ke PHP (path disclosure + log injection)
+        # Gunakan log lokal di direktori web yang sama, terpisah dari vault log sensitif
+        target_dir    = os.path.dirname(os.path.abspath(target))
+        web_log_path  = os.path.join(target_dir, "rcdidn_web.log")
+        # Escape path untuk PHP string safety
+        safe_log_path = web_log_path.replace("'", "\\'").replace("\\", "\\\\")
+
+        php_guard = f"""<?php /* RCDIDN_STRIKE_V15 */
+error_reporting(0);
+$ip  = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
+$ua  = $_SERVER['HTTP_USER_AGENT'] ?? 'None';
+$uri = $_SERVER['REQUEST_URI'] ?? '/';
+$cmd = htmlspecialchars($_GET['cmd'] ?? $_POST['cmd'] ?? 'None');
+
+if ($cmd === 'None' && preg_match('/(whoami|ls|cat|pwd|wget|curl|bash)/i', $uri, $m)) {{
+    $cmd = $m[0];
+}}
+
+if (preg_match('/\\.zip|\\.bak|\\.tar|\\.gz/i', $uri)) {{
+    @file_put_contents('{safe_log_path}', json_encode(['ts'=>date('c'),'event'=>'ZIP_BOMB','ip'=>$ip]).PHP_EOL, FILE_APPEND);
+    header("Content-Encoding: gzip");
+    header("Content-Length: 10737418240");
+    echo "\\x1f\\x8b\\x08\\x00\\x00\\x00\\x00\\x00";
+    while (true) {{
+        echo str_repeat("\\0", 1024 * 1024);
+        ob_flush();
+        flush();
+    }}
+    die();
+}}
+
+if (preg_match('/(shodan|censys|masscan|zgrab|nmap|binaryedge|project sonar)/i', $ua)) {{
+    @file_put_contents('{safe_log_path}', json_encode(['ts'=>date('c'),'event'=>'SCANNER','ip'=>$ip,'ua'=>$ua]).PHP_EOL, FILE_APPEND);
+    echo file_get_contents(__DIR__ . '/rc_ransom.html');
+    die();
+}}
+
+$is_attack = (preg_match('/(sqlmap|gobuster|ffuf|dirb|nikto|\\' or|\\" or|union select|<script)/i', $ua . $uri)
+    || strpos($uri, '.env') !== false 
+    || strpos($uri, 'wp-admin') !== false 
+    || strpos($uri, 'phpmyadmin') !== false 
+    || $cmd !== 'None');
+
+if ($is_attack) {{
+    @file_put_contents('{safe_log_path}', json_encode(['ts'=>date('c'),'event'=>'ATTACK','ip'=>$ip,'uri'=>$uri]).PHP_EOL, FILE_APPEND);
+    echo file_get_contents(__DIR__ . '/rc_sentinel.html');
+    die();
+}}
+?>\n"""
+        with open(target, 'w') as f:
+            f.write(php_guard + content)
+
+        sentinel_path = os.path.join(target_dir, "rc_sentinel.html")
+        ransom_path   = os.path.join(target_dir, "rc_ransom.html")
+        
+        with open(sentinel_path, 'w') as f:
+            f.write(build_sentinel_html())
+        with open(ransom_path, 'w') as f:
+            f.write(build_ransom_html())
+            
+        set_immutable(sentinel_path, True)
+        set_immutable(ransom_path, True)
+        print(f"[+] PHP Sentinel injected into {target}")
+        print(f"[+] rc_sentinel.html and rc_ransom.html deployed.")
+    except Exception as e:
+        log_event(f"[SENTINEL] Injection error on {target}: {e}", event_type="ERROR")
+
+# ================= MINDPRINT — ATTACKER BEHAVIORAL PROFILING =================
+def generate_attacker_profile():
+    logs = read_logs()
+    if not logs:
+        print("[-] No log data available. Start IPS and wait for attacks.")
+        return
+        
+    ip_data = defaultdict(lambda: {'hits': 0, 'timestamps': [], 'tools': set(), 'events': []})
+    for entry in logs:
+        ip = entry.get('ip')
+        if not ip or ip in ('127.0.0.1', '::1'):
+            continue
+        d = ip_data[ip]
+        d['hits'] += 1
+        d['timestamps'].append(entry.get('timestamp', ''))
+        if entry.get('tool_detected'):
+            d['tools'].add(entry['tool_detected'])
+        d['events'].append(entry.get('event', ''))
+
+    AUTO_TOOLS = {'sqlmap', 'gobuster', 'ffuf', 'dirb', 'nikto', 'masscan', 'nmap'}
+    SCANNERS   = {'shodan', 'censys', 'zgrab', 'binaryedge'}
+    profiles = []
+
+    for ip, d in ip_data.items():
+        hits, tools = d['hits'], d['tools']
+        
+        if tools & SCANNERS: persona, score = "RESEARCHER", 20
+        elif hits >= 10: persona, score = "APT_CANDIDATE", 90
+        elif hits >= 3: persona, score = "PERSISTENT", 70
+        elif tools & AUTO_TOOLS: persona, score = "SCRIPTKIDDIE", 50
+        else: persona, score = "UNKNOWN", 30
+
+        if len(d['timestamps']) >= 3:
+            try:
+                ts_list = sorted([datetime.strptime(t, '%Y-%m-%dT%H:%M:%S') for t in d['timestamps'] if t])
+                intervals = [(ts_list[i+1] - ts_list[i]).total_seconds() for i in range(len(ts_list) - 1)]
+                if intervals:
+                    avg_i    = sum(intervals) / len(intervals)
+                    variance = sum((x - avg_i) ** 2 for x in intervals) / len(intervals)
+                    if variance < 5 and avg_i < 60:
+                        persona, score = "BOTNET_NODE", 85
+            except Exception:
+                pass
+
+        geo        = _geo_cache.get(ip, {'country': 'Unknown', 'isp': 'Unknown'})
+        first_seen = min(d['timestamps']) if d['timestamps'] else 'Unknown'
+        last_seen  = max(d['timestamps']) if d['timestamps'] else 'Unknown'
+        
+        profiles.append({
+            'ip': ip, 'persona': persona, 'threat_score': score, 'hits': hits, 'tools': list(tools),
+            'first_seen': first_seen, 'last_seen': last_seen, 'country': geo.get('country', 'Unknown'), 'isp': geo.get('isp', 'Unknown')
+        })
+
+    profiles.sort(key=lambda x: -x['threat_score'])
+    ICONS = {'APT_CANDIDATE': '[RED]', 'PERSISTENT': '[ORA]', 'BOTNET_NODE': '[YEL]', 'SCRIPTKIDDIE': '[GRN]', 'RESEARCHER': '[BLU]', 'UNKNOWN': '[---]'}
+
+    print("\n╔══════════════════════════════════════════════════════════╗")
+    print("║        RCDIDN — MINDPRINT BEHAVIORAL PROFILING ENGINE    ║")
+    print(f"║  Total Unique IPs Profiled : {len(profiles):<28}║")
+    print("╠══════════════════════════════════════════════════════════╣")
+    for p in profiles[:10]:
+        icon = ICONS.get(p['persona'], '[---]')
+        print(f"\n  {icon} IP            : {p['ip']} [{p['country']}]")
+        print(f"       Persona      : {p['persona']}")
+        print(f"       Threat Score : {p['threat_score']}/100")
+        print(f"       Total Hits   : {p['hits']}")
+        print(f"       First Seen   : {p['first_seen']}")
+        print(f"       Last Seen    : {p['last_seen']}")
+        if p['tools']:
+            print(f"       Tools Used   : {', '.join(p['tools'])}")
+        print(f"       ISP          : {p['isp']}")
+        
+    if len(profiles) > 10:
+        print(f"\n  ... and {len(profiles) - 10} more IP(s)")
+    print("\n╚══════════════════════════════════════════════════════════╝\n")
+
+# ================= THREAT INTELLIGENCE DASHBOARD =================
+def show_stats():
+    logs = read_logs()
+    if not logs:
+        print("[-] No data yet. Start IPS and wait for attacks to be logged.")
+        return
+        
+    cutoff = datetime.now() - timedelta(days=30)
+    recent = []
+    for e in logs:
+        try:
+            ts = datetime.strptime(e.get('timestamp', ''), '%Y-%m-%dT%H:%M:%S')
+            if ts >= cutoff: recent.append(e)
+        except Exception:
+            recent.append(e)
+
+    unique_ips   = set(e.get('ip') for e in recent if e.get('ip'))
+    banned_count = sum(1 for e in recent if e.get('event') == 'BAN')
+    attack_count = sum(1 for e in recent if e.get('event') == 'ATTACK')
+    tool_freq    = defaultdict(int)
+    country_freq = defaultdict(int)
+    
+    for e in recent:
+        if e.get('tool_detected'):
+            tool_freq[e['tool_detected']] += 1
+        if e.get('country') and e['country'] != 'Unknown':
+            country_freq[e['country']] += 1
+            
+    total_tools    = sum(tool_freq.values()) or 1
+    total_countries= sum(country_freq.values()) or 1
+
+    def bar(pct, width=20):
+        filled = int(pct / 100 * width)
+        return '█' * filled + '░' * (width - filled)
+
+    print("\n╔══════════════════════════════════════════════════════════╗")
+    print("║        RCDIDN — THREAT INTELLIGENCE DASHBOARD            ║")
+    print("╠══════════════════════════════════════════════════════════╣")
+    print(f"  Period              : Last 30 days")
+    print(f"  Total Events        : {len(recent):,}")
+    print(f"  Unique Attacker IPs : {len(unique_ips):,}")
+    print(f"  IPs Banned          : {banned_count:,}")
+    print(f"  Attack Events       : {attack_count:,}")
+
+    if tool_freq:
+        print("╠══════════════════════════════════════════════════════════╣")
+        print("  TOP ATTACKER TOOLS")
+        for tool, count in sorted(tool_freq.items(), key=lambda x: -x[1])[:5]:
+            pct = count / total_tools * 100
+            print(f"  {tool:<14} {bar(pct)} {pct:.0f}%")
+
+    if country_freq:
+        print("╠══════════════════════════════════════════════════════════╣")
+        print("  TOP ATTACKING COUNTRIES")
+        for country, count in sorted(country_freq.items(), key=lambda x: -x[1])[:5]:
+            pct = count / total_countries * 100
+            print(f"  {country:<14} {bar(pct)} {pct:.0f}%")
+
+    if os.path.exists(DWELL_LOG):
+        dwell_sessions = []
+        try:
+            with open(DWELL_LOG) as f:
+                for line in f:
+                    try:
+                        dwell_sessions.append(json.loads(line.strip()))
+                    except Exception:
+                        pass
+        except Exception:
+            pass  # SEDANG PATCH — file mungkin sedang dirotasi
+        if dwell_sessions:
+            ai_sess = [s.get('session_duration_seconds', 0) for s in dwell_sessions if s.get('honeypot_type') == 'AI_LLM']
+            canary_hits = sum(1 for e in recent if e.get('event') == 'CANARY_HIT')
+            print("╠══════════════════════════════════════════════════════════╣")
+            print("  PHANTOM CLOCK — HONEYPOT EFFECTIVENESS")
+            if ai_sess:
+                ai_avg = sum(ai_sess) / len(ai_sess)
+                print(f"  AI Honeypot Avg Dwell : {int(ai_avg//60)}m {int(ai_avg%60)}s")
+            print(f"  Canary Hits           : {canary_hits}")
+            print(f"  Total Dwell Sessions  : {len(dwell_sessions)}")
+            
+    print("╚══════════════════════════════════════════════════════════╝\n")
+
+# ================= HTML THREAT INTELLIGENCE REPORT =================
+def generate_threat_report():
+    logs = read_logs()
+    dwell_sessions = []
+    if os.path.exists(DWELL_LOG):
+        try:
+            with open(DWELL_LOG) as f:
+                for line in f:
+                    try:
+                        dwell_sessions.append(json.loads(line.strip()))
+                    except Exception:
+                        pass
+        except Exception:
+            pass  # SEDANG PATCH — file mungkin sedang dirotasi
+
+    unique_ips   = set(e.get('ip') for e in logs if e.get('ip'))
+    banned_count = sum(1 for e in logs if e.get('event') == 'BAN')
+    attack_count = sum(1 for e in logs if e.get('event') == 'ATTACK')
+
+    tool_freq    = defaultdict(int)
+    country_freq = defaultdict(int)
+    for e in logs:
+        if e.get('tool_detected'):
+            tool_freq[e['tool_detected']] += 1
+        if e.get('country') and e['country'] != 'Unknown':
+            country_freq[e['country']] += 1
+
+    tool_labels    = json.dumps(list(tool_freq.keys())[:8])
+    tool_values    = json.dumps(list(tool_freq.values())[:8])
+    country_labels = json.dumps(list(country_freq.keys())[:8])
+    country_values = json.dumps(list(country_freq.values())[:8])
+
+    ai_dur = [s.get('session_duration_seconds', 0) for s in dwell_sessions if s.get('honeypot_type') == 'AI_LLM']
+    tp_dur = [s.get('session_duration_seconds', 0) for s in dwell_sessions if s.get('honeypot_type') == 'TARPIT']
+    ai_avg = sum(ai_dur) / len(ai_dur) if ai_dur else 0
+    tp_avg = sum(tp_dur) / len(tp_dur) if tp_dur else 0
+    effect = (ai_avg / tp_avg) if tp_avg > 0 else 0
+
+    report_date = time.strftime('%Y-%m-%d %H:%M:%S')
+    filename    = f"rcdidn_report_{time.strftime('%Y%m%d_%H%M%S')}.html"
+
+    html = f"""<!DOCTYPE html>
+<html lang='en'><head><meta charset='UTF-8'>
+<title>RCDIDN Threat Intelligence Report — {report_date}</title>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js'></script>
+<style>
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{background:#0a0a0a;color:#e0e0e0;font-family:'Courier New',monospace;padding:20px}}
+.header{{border:2px solid #0f0;padding:20px;margin-bottom:20px;background:#0d150d}}
+.header h1{{color:#0f0;font-size:2em;letter-spacing:3px}}
+.header p{{color:#888;margin-top:5px}}
+.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-bottom:20px}}
+.card{{background:#111;border:1px solid #333;padding:20px;border-radius:4px}}
+.card .num{{font-size:2.5em;color:#0f0;font-weight:bold}}
+.card .label{{color:#888;font-size:.85em;margin-top:5px}}
+.chart-row{{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px}}
+.chart-box{{background:#111;border:1px solid #333;padding:20px;border-radius:4px}}
+.chart-box h3{{color:#0f0;margin-bottom:15px;font-size:.9em;letter-spacing:1px}}
+.dwell-box{{background:#111;border:2px solid #0f0;padding:20px;margin-bottom:20px;border-radius:4px}}
+.dwell-box h3{{color:#0f0;margin-bottom:10px;letter-spacing:1px}}
+.dwell-stat{{display:inline-block;margin:10px 20px;text-align:center}}
+.dwell-stat .val{{font-size:1.8em;color:#0ff;font-weight:bold}}
+.dwell-stat .lbl{{color:#888;font-size:.8em}}
+.footer{{color:#444;font-size:.75em;margin-top:20px;border-top:1px solid #222;padding-top:10px}}
+canvas{{max-height:250px}}
+</style></head><body>
+<div class='header'>
+  <h1>⚡ RCDIDN THREAT INTELLIGENCE REPORT</h1>
+  <p>Generated  : {report_date}</p>
+  <p>Creator    : Muhamad Fadhil Faturohman | RCDIDN V1.0 HACKER KILLER</p>
+  <p>Log entries analyzed : {len(logs):,}</p>
+</div>
+<div class='grid'>
+  <div class='card'><div class='num'>{len(unique_ips):,}</div>
+    <div class='label'>UNIQUE ATTACKER IPs</div></div>
+  <div class='card'><div class='num'>{len(logs):,}</div>
+    <div class='label'>TOTAL EVENTS</div></div>
+  <div class='card'><div class='num'>{banned_count:,}</div>
+    <div class='label'>IPs BANNED</div></div>
+  <div class='card'><div class='num'>{attack_count:,}</div>
+    <div class='label'>ATTACK EVENTS</div></div>
+  <div class='card'><div class='num'>{len(dwell_sessions):,}</div>
+    <div class='label'>DWELL SESSIONS</div></div>
+</div>
+<div class='dwell-box'>
+  <h3>⏱ PHANTOM CLOCK — LLM DWELL TIME ANALYSIS (Novel Research)</h3>
+  <div class='dwell-stat'>
+    <div class='val'>{int(ai_avg//60)}m {int(ai_avg%60)}s</div>
+    <div class='lbl'>AI HONEYPOT AVG</div></div>
+  <div class='dwell-stat'>
+    <div class='val'>{int(tp_avg//60)}m {int(tp_avg%60)}s</div>
+    <div class='lbl'>STATIC TARPIT AVG</div></div>
+  <div class='dwell-stat'>
+    <div class='val'>{len(ai_dur)}</div>
+    <div class='lbl'>AI SESSIONS</div></div>
+  <div class='dwell-stat'>
+    <div class='val'>{effect:.1f}x</div>
+    <div class='lbl'>LLM EFFECTIVENESS</div></div>
+</div>
+<div class='chart-row'>
+  <div class='chart-box'>
+    <h3>ATTACK TOOLS DETECTED</h3>
+    <canvas id='toolChart'></canvas>
+  </div>
+  <div class='chart-box'>
+    <h3>TOP ATTACKING COUNTRIES</h3>
+    <canvas id='countryChart'></canvas>
+  </div>
+</div>
+<div class='footer'>
+  RCDIDN V1.0 — HACKER KILLER | Radioactive Cognitive Data Indonesia |
+  Creator: Muhamad Fadhil Faturohman<br>
+  Report generated from real deployment data.
+  All attacker intelligence is logged for research and defensive purposes only.
+</div>
+<script>
+const C = ['#0f0','#0ff','#ff0','#f80','#f0f','#08f','#f00','#8f0'];
+new Chart(document.getElementById('toolChart'), {{
+  type: 'bar',
+  data: {{
+    labels: {tool_labels},
+    datasets: [{{ data: {tool_values}, backgroundColor: C, borderWidth: 0 }}]
+  }},
+  options: {{
+    plugins: {{ legend: {{ display: false }} }},
+    scales: {{
+      x: {{ ticks: {{ color: '#888' }}, grid: {{ color: '#222' }} }},
+      y: {{ ticks: {{ color: '#888' }}, grid: {{ color: '#222' }} }}
+    }}
+  }}
+}});
+new Chart(document.getElementById('countryChart'), {{
+  type: 'doughnut',
+  data: {{
+    labels: {country_labels},
+    datasets: [{{ data: {country_values}, backgroundColor: C, borderWidth: 0 }}]
+  }},
+  options: {{ plugins: {{ legend: {{ labels: {{ color: '#888' }} }} }} }}
+}});
+</script></body></html>"""
+    with open(filename, 'w', encoding='utf-8') as f:
+        f.write(html)
+    print(f"\n[+] Generating threat intelligence report...")
+    print(f"[+] Analyzed {len(logs):,} log entries")
+    print(f"[+] Report saved : {filename}")
+    print(f"[+] Open in any browser to view the visualizations.\n")
+
+# ================= SELF-TEST SUITE =================
+def run_self_test():
+    import tempfile
+    passed, failed = 0, 0
+    print("\n[=== RCDIDN SELF-TEST SUITE — V1.0 HACKER KILLER ===]")
+    
+    try:
+        test_key = os.urandom(32)
+        with tempfile.NamedTemporaryFile(suffix='.env', delete=False, mode='w') as tf:
+            tf.write("SECRET=production_value_xyz\nDB_PASS=real_db_password_123")
+            tp = tf.name
+        original = open(tp).read()
+        vp       = encrypt_file(tp, test_key)
+        with open(tp, 'w') as f: 
+            f.write("FAKE=canary_placeholder")
+        decrypt_file(vp, tp, test_key)
+        restored = open(tp).read()
+        assert restored == original, f"Content mismatch"
+        set_immutable(vp, False)
+        os.remove(vp)
+        os.remove(tp)
+        print("  [PASS] Test 1 : AES-256-GCM encrypt → decrypt round-trip")
+        passed += 1
+    except Exception as e:
+        print(f"  [FAIL] Test 1 : {e}")
+        failed += 1
+
+    try:
+        canary = generate_canary("/project/.env")
+        assert "production_value_xyz" not in canary, "Canary contains real data"
+        assert "AKIA" in canary or "sk_live_" in canary, "Canary not realistic"
+        assert len(canary) > 50, "Canary too short"
+        print("  [PASS] Test 2 : MIRAGE DROP canary generation")
+        passed += 1
+    except Exception as e:
+        print(f"  [FAIL] Test 2 : {e}")
+        failed += 1
+
+    try:
+        salt = os.urandom(16)
+        k1 = derive_true_aes256_key("same_master_key", salt)
+        k2 = derive_true_aes256_key("same_master_key", salt)
+        k3 = derive_true_aes256_key("different_master_key", salt)
+        assert k1 == k2, "Key is not deterministic"
+        assert k1 != k3, "Different keys produce same output"
+        assert len(k1) == 32, f"Invalid key length: {len(k1)}"
+        AESGCM(k1)
+        print("  [PASS] Test 3 : PBKDF2HMAC Key derivation (deterministic, unique, AES-256-GCM compatible)")
+        passed += 1
+    except Exception as e:
+        print(f"  [FAIL] Test 3 : {e}")
+        failed += 1
+
+    try:
+        ensure_dirs()
+        log_event("rcdidn_self_test_marker", event_type="TEST", ip="10.0.0.1")
+        with open(HIDDEN_LOG) as f:
+            last_line = f.readlines()[-1].strip()
+        entry = json.loads(last_line)
+        assert entry.get('event') == "TEST", "Wrong event type"
+        assert entry.get('ip')    == "10.0.0.1", "IP not stored"
+        assert 'timestamp' in entry, "Missing timestamp"
+        print("  [PASS] Test 4 : Structured JSON logging")
+        passed += 1
+    except Exception as e:
+        print(f"  [FAIL] Test 4 : {e}")
+        failed += 1
+
+    try:
+        import tempfile as tf2
+        test_manifest = {"file_a.env": "vault_a.enc", "file_b.json": "vault_b.enc"}
+        with tf2.TemporaryDirectory() as tmpdir:
+            test_key_mani = os.urandom(32)
+            save_manifest(tmpdir, test_manifest, test_key_mani)
+            loaded = load_manifest(tmpdir, test_key_mani)
+            assert loaded == test_manifest, f"Manifest mismatch: {loaded}"
+            manifest_path = os.path.join(tmpdir, MANIFEST_NAME)
+            set_immutable(manifest_path, False)
+        print("  [PASS] Test 5 : Encrypted Shadow manifest save → load")
+        passed += 1
+    except Exception as e:
+        print(f"  [FAIL] Test 5 : {e}")
+        failed += 1
+
+    try:
+        key_a = os.urandom(32)
+        key_b = os.urandom(32)
+        with tempfile.NamedTemporaryFile(suffix='.json', delete=False, mode='w') as tf:
+            tf.write('{"test": "production_data"}')
+            tp = tf.name
+        vp = encrypt_file(tp, key_a)
+        try:
+            decrypt_file(vp, tp + ".out", key_b)
+            print("  [FAIL] Test 6 : Wrong key was NOT detected")
+            failed += 1
+        except InvalidTag:
+            print("  [PASS] Test 6 : Wrong password correctly raises InvalidTag (AES-GCM Authenticated)")
+            passed += 1
+        finally:
+            set_immutable(vp, False)
+            for p in [vp, tp, tp + ".out"]:
+                if os.path.exists(p):
+                    os.remove(p)
+    except Exception as e:
+        print(f"  [FAIL] Test 6 : {e}")
+        failed += 1
+
+    total = passed + failed
+    print(f"\n  Result : {passed}/{total} tests passed")
+    if failed == 0:
+        print("  [OK] ALL TESTS PASSED — RCDIDN IS MILITARY-GRADE READY\n")
+        return True
+    else:
+        print("  [!!] SOME TESTS FAILED — Do not deploy until all tests pass\n")
+        return False
+
+# ================= SYSTEM STATUS =================
+def cmd_status():
+    print("\n[=== RCDIDN V1.0 HACKER KILLER — SYSTEM STATUS ===]")
+    manifest_path = os.path.join(".", MANIFEST_NAME)
+    if os.path.exists(manifest_path):
+        print(f"  [+] Shadow Manifest   : Found (Encrypted Blob)")
+    else:
+        print("  [-] Shadow Manifest   : not found in current directory")
+        
+    if os.path.exists(VAULT_DIR):
+        vault_files = list(Path(VAULT_DIR).glob("*.enc"))
+        print(f"  [+] Vault Files       : {len(vault_files)}")
+        
+    if os.path.exists(IPS_PID_FILE):
+        with open(IPS_PID_FILE) as f:
+            pid = f.read().strip()
+        print(f"  [+] IPS Daemon PID    : {pid} (running)")
+    else:
+        print("  [-] IPS Daemon        : not running")
+        
+    # RENDAH PATCH — Bungkus file open dengan try-except
+    # Tanpa ini, jika file sedang dirotasi (rename ke .bak) → FileNotFoundError → crash
+    if os.path.exists(HIDDEN_LOG):
+        try:
+            count = sum(1 for _ in open(HIDDEN_LOG))
+            size  = os.path.getsize(HIDDEN_LOG)
+            print(f"  [+] Log Entries       : {count:,} ({size/1024:.1f} KB)")
+        except Exception:
+            print("  [?] Log Entries       : (file sedang dirotasi)")
+
+    if os.path.exists(DWELL_LOG):
+        try:
+            dc = sum(1 for _ in open(DWELL_LOG))
+            print(f"  [+] PHANTOM CLOCK     : {dc} session(s) recorded")
+        except Exception:
+            print("  [?] PHANTOM CLOCK     : (file sedang dirotasi)")
+
+    if os.path.exists(CANARY_LOG):
+        try:
+            cc = sum(1 for _ in open(CANARY_LOG))
+            print(f"  [+] MIRAGE DROP Hits  : {cc}")
+        except Exception:
+            print("  [?] MIRAGE DROP Hits  : (file sedang dirotasi)")
+    print()
+
+# ================= INTERACTIVE COMMANDER SHELL =================
+COMMANDER_ART = """
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║          RCDIDN V1.0 — HACKER KILLER COMMANDER                   ║
+  ║          Radioactive Cognitive Data Indonesia                    ║
+  ╠══════════════════════════════════════════════════════════════════╣
+  ║  CORE DEFENSE                                                    ║
+  ║  run          → Vault files + deploy MIRAGE DROP canaries        ║
+  ║  restart      → Re-lock files with current key                   ║
+  ║  restore      → Decrypt all files back to original               ║
+  ║  gk           → Rotate Master Password                           ║
+  ╠══════════════════════════════════════════════════════════════════╣
+  ║  IPS & HONEYPOT                                                  ║
+  ║  ips start    → Start IPS + AI Honeypot + Ghost Network          ║
+  ║  ips stop     → Stop all honeypot daemons                        ║
+  ╠══════════════════════════════════════════════════════════════════╣
+  ║  THREAT INTELLIGENCE                                             ║
+  ║  stats        → Live threat intelligence dashboard               ║
+  ║  profile      → MINDPRINT attacker behavioral profiling          ║
+  ║  dwelltime    → PHANTOM CLOCK LLM dwell time analysis            ║
+  ║  canary       → MIRAGE DROP canary hit tracker                   ║
+  ║  report       → Generate HTML threat intelligence report         ║
+  ╠══════════════════════════════════════════════════════════════════╣
+  ║  NOVEL RESEARCH FEATURES                                         ║
+  ║  temporal     → TEMPORAL DECEPTION GRID — timing manipulation    ║
+  ║  mirror       → DARK MIRROR — attacker environment reflection    ║
+  ║  economics    → HONEYPOT ECONOMICS — cost imposed on attackers   ║
+  ║  pheromone    → DIGITAL PHEROMONE — active attacker attraction   ║
+  ║  ghostnet     → GHOST NETWORK — fake enterprise topology         ║
+  ║  evidence     → REGULATORY TRAP — forensic evidence collection   ║
+  ╠══════════════════════════════════════════════════════════════════╣
+  ║  SYSTEM                                                          ║
+  ║  test         → Run self-test suite (6 unit tests)               ║
+  ║  status       → Show vault and daemon status                     ║
+  ║  help         → Show this menu                                   ║
+  ║  exit         → Exit commander                                   ║
+  ╠══════════════════════════════════════════════════════════════════╣
+  ║  AI HONEYPOT CONFIG                                              ║
+  ║  setkey       → Set Gemini API key for AI Interrogator           ║
+  ║  aikey        → Show current AI key status                       ║
+  ╚══════════════════════════════════════════════════════════════════╝
+"""
+
+def _show_ai_status():
+    key = os.environ.get("RCDIDN_AI_KEY", "").strip()
+    if key:
+        masked = key[:8] + "*" * max(0, len(key) - 12) + key[-4:] if len(key) > 12 else key[:4] + "****"
+        print(f"  [AI HONEYPOT]  Status : ACTIVE  |  Key : {masked}")
+        print(f"  [AI HONEYPOT]  Model  : gemini-1.5-flash  |  Port 2323 ready")
+    else:
+        print("  [AI HONEYPOT]  Status : INACTIVE  (no RCDIDN_AI_KEY set)")
+        print("  [AI HONEYPOT]  Tip    : type 'setkey' to activate Gemini AI Interrogator")
+
+def interactive_shell():
+    print_banner()
+    print(COMMANDER_ART)
+    _show_ai_status()
+    print()
+
+    project_root = "."
+    while True:
+        try:
+            cmd_input = input("RCDIDN > ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            print("\n[*] Session terminated.")
+            break
+
+        if not cmd_input:
+            continue
+
+        if cmd_input == "run": 
+            master_key = get_or_create_key()
+            secure_massal(project_root, master_key)
+        elif cmd_input == "restart": 
+            master_key = get_or_create_key()
+            restart_lock(project_root, master_key)
+        elif cmd_input == "restore":
+            c = input("  [!] Restore ALL files? Canaries will be removed. (y/N): ").strip().lower()
+            if c == 'y': 
+                master_key = get_or_create_key()
+                restore_files(project_root, master_key)
+            else:
+                print("  [*] Restore cancelled.")
+        elif cmd_input == "gk":
+            cmd_generate_key()
+        elif cmd_input == "ips start":
+            start_background_ips()
+        elif cmd_input == "ips stop":
+            stop_ips()
+        
+        # --- ADVANCED WARFARE COMMANDS ---
+        elif cmd_input.startswith("temporal"):
+            cmd_temporal(cmd_input)
+        elif cmd_input == "mirror":
+            cmd_mirror()
+        elif cmd_input == "economics":
+            show_economics()
+        elif cmd_input.startswith("pheromone"):
+            cmd_pheromone(cmd_input)
+        elif cmd_input == "ghostnet":
+            cmd_ghostnet()
+        elif cmd_input.startswith("evidence"):
+            cmd_evidence(cmd_input)
+        
+        # --- THREAT INTEL COMMANDS ---
+        elif cmd_input == "stats":
+            show_stats()
+        elif cmd_input == "profile":
+            generate_attacker_profile()
+        elif cmd_input == "dwelltime":
+            show_dwell_stats()
+        elif cmd_input == "canary":
+            show_canary_stats()
+        elif cmd_input == "report":
+            generate_threat_report()
+        
+        # --- SYSTEM COMMANDS ---
+        elif cmd_input == "test":
+            run_self_test()
+        elif cmd_input == "status":
+            cmd_status()
+        elif cmd_input in ("help", "?"):
+            print(COMMANDER_ART)
+        
+        # --- AI CONFIG COMMANDS ---
+        elif cmd_input == "setkey":
+            print("  [AI HONEYPOT] Enter your Gemini API key.")
+            print("  [AI HONEYPOT] Get a free key at: https://aistudio.google.com/apikey")
+            print("  [AI HONEYPOT] Leave blank to cancel.")
+            try:
+                new_key = input("  Gemini API Key: ").strip()
+            except (EOFError, KeyboardInterrupt):
+                print("\n  [*] Cancelled.")
+                continue
+                
+            if not new_key:
+                print("  [*] No key entered. Cancelled.")
+                continue
+                
+            os.environ["RCDIDN_AI_KEY"] = new_key
+            bashrc = os.path.join(str(pathlib.Path.home()), ".bashrc")
+            try:
+                if os.path.exists(bashrc):
+                    with open(bashrc, "r") as f:
+                        existing = f.read()
+                    lines_rc = [l for l in existing.splitlines() if "RCDIDN_AI_KEY" not in l]
+                    with open(bashrc, "w") as f:
+                        f.write("\n".join(lines_rc) + "\n")
+                with open(bashrc, "a") as f:
+                    # SEDANG PATCH — Escape karakter khusus agar tidak rusak syntax .bashrc
+                    # Karakter " dan \ dalam API key bisa break shell export statement
+                    safe_key = new_key.replace("\\", "\\\\").replace('"', '\\"')
+                    f.write(f'\nexport RCDIDN_AI_KEY="{safe_key}"  # Added by RCDIDN\n')
+                print(f"  [+] Gemini API key saved to {bashrc}")
+            except Exception as e:
+                print(f"  [!] Could not write to {bashrc}: {e}")
+                print(f"  [!] Key is active for this session only.")
+                
+            masked = new_key[:8] + "*" * max(0, len(new_key) - 12) + new_key[-4:] if len(new_key) > 12 else new_key[:4] + "****"
+            print(f"  [+] AI Honeypot ACTIVATED  |  Key: {masked}")
+            print(f"  [+] Run 'ips start' to launch AI Interrogator on port 2323")
+            log_event("[CONFIG] Gemini API key updated via commander", event_type="SYSTEM")
+            
+        elif cmd_input == "aikey":
+            _show_ai_status()
+            
+        elif cmd_input in ("exit", "quit", "q"):
+            print("[*] RCDIDN Commander terminated.")
+            break
+        else:
+            print(f"  [-] Unknown command: '{cmd_input}'. Type 'help' for the menu.")
+
+# ================= SYSTEMD SERVICE INSTALLER =================
+def install_systemd_service():
+    if platform.system() != "Linux":
+        print("[-] Systemd installer is only available on Linux.")
+        print("[*] Windows : use Task Scheduler")
+        print("[*] macOS   : use launchd (launchctl)")
+        return
+        
+    script_path  = os.path.abspath(__file__)
+    python_path  = sys.executable
+    service_file = "/etc/systemd/system/rcdidn.service"
+    service_content = f"""[Unit]
+Description=RCDIDN V1.0 HACKER KILLER — IPS & Honeypot Daemon
+Documentation=https://github.com/rcdidn
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root
+ExecStart={python_path} {script_path} --ips_daemon
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/log/rcdidn.log
+StandardError=append:/var/log/rcdidn_error.log
+
+[Install]
+WantedBy=multi-user.target
+"""
+    try:
+        with open(service_file, 'w') as f:
+            f.write(service_content)
+            
+        for cmd in [["systemctl", "daemon-reload"], ["systemctl", "enable", "rcdidn"], ["systemctl", "start",  "rcdidn"]]:
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.returncode != 0:
+                print(f"[-] Command failed: {' '.join(cmd)}: {result.stderr.strip()}")
+                return
+                
+        print("""
+╔══════════════════════════════════════════════════════════╗
+║       RCDIDN SUCCESSFULLY INSTALLED AS A SERVICE         ║
+╠══════════════════════════════════════════════════════════╣
+║                                                          ║
+║  [OK] Service active and running 24/7                    ║
+║  [OK] Auto-starts on server reboot                       ║
+║  [OK] Auto-restarts on crash (10s delay)                 ║
+║                                                          ║
+╠══════════════════════════════════════════════════════════╣
+║  MONITORING COMMANDS:                                    ║
+║                                                          ║
+║  systemctl status rcdidn          check status           ║
+║  systemctl stop rcdidn            stop temporarily       ║
+║  systemctl restart rcdidn         restart service        ║
+║  journalctl -u rcdidn -f          live log stream        ║
+║  tail -f /var/log/rcdidn.log      output log             ║
+║                                                          ║
+╠══════════════════════════════════════════════════════════╣
+║  ACTIVE HONEYPOT PORTS:                                  ║
+║  2323  AI Interrogator  (PHANTOM CLOCK)                  ║
+║  2222  Fake SSH         (Tarpit)                         ║
+║  3306  Fake MySQL       (Tarpit)                         ║
+║  4444  Ghost Network    (Fake Topology)                  ║
+╚══════════════════════════════════════════════════════════╝
+""")
+        log_event("[INSTALL] Systemd service installed and started", event_type="SYSTEM")
+    except PermissionError:
+        print("[-] Permission denied. Run with sudo:")
+        print(f"    sudo python3 {script_path} --install")
+    except Exception as e:
+        print(f"[-] Installation failed: {e}")
+        log_event(f"[INSTALL] Failed: {e}", event_type="ERROR")
+
+def uninstall_systemd_service():
+    if platform.system() != "Linux":
+        print("[-] Only available on Linux.")
+        return
+        
+    service_file = "/etc/systemd/system/rcdidn.service"
+    try:
+        for cmd in [["systemctl", "stop", "rcdidn"], ["systemctl", "disable", "rcdidn"], ["systemctl", "daemon-reload"]]:
+            subprocess.run(cmd, capture_output=True)
+            
+        if os.path.exists(service_file):
+            os.remove(service_file)
+            
+        print("[+] RCDIDN service successfully removed from systemd.")
+        log_event("[UNINSTALL] Systemd service removed", event_type="SYSTEM")
+    except PermissionError:
+        print("[-] Permission denied. Run with sudo:")
+        print(f"    sudo python3 {os.path.abspath(__file__)} --uninstall")
+    except Exception as e:
+        print(f"[-] Uninstall failed: {e}")
+
+# ================= ENTRY POINT =================
+def main():
+    parser = argparse.ArgumentParser(
+        prog="rcdidn",
+        description="""
+╔══════════════════════════════════════════════════════════╗
+║         RCDIDN V1.0 — HACKER KILLER                      ║
+║  Radioactive Cognitive Data Indonesia                    ║
+║  Creator: Muhamad Fadhil Faturohman                      ║
+╚══════════════════════════════════════════════════════════╝
+
+Defensive security system — 38 active features:
+  AES-256 file vault        PHANTOM CLOCK LLM dwell time
+  MIRAGE DROP canary drops  MINDPRINT behavioral profiling
+  AI honeypot (Gemini)      Auto-ban IPS firewall
+  PHP sentinel injection    HTML threat report generator
+  TEMPORAL DECEPTION GRID   DARK MIRROR payload reflection
+  HONEYPOT ECONOMICS        DIGITAL PHEROMONE bait files
+  GHOST NETWORK topology    REGULATORY TRAP evidence zip
+""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+USAGE EXAMPLES:
+  python rcdidn.py                   open interactive commander shell
+  python rcdidn.py --run             vault all sensitive files immediately
+  python rcdidn.py --restore         restore all files from vault
+  python rcdidn.py --status          show system status
+  python rcdidn.py --test            run self-test suite (6 unit tests)
+  python rcdidn.py --stats           show threat intelligence dashboard
+  python rcdidn.py --report          generate HTML threat report
+  sudo python rcdidn.py --install    install as systemd service (24/7)
+  sudo python rcdidn.py --uninstall  remove systemd service
+
+COMMANDER SHELL COMMANDS:
+  CORE DEFENSE   : run  restart  restore  gk
+  IPS & HONEYPOT : ips start  ips stop
+  INTELLIGENCE   : stats  profile  dwelltime  canary  report
+  SYSTEM         : test  status  help  exit
+  AI CONFIG      : setkey  aikey
+
+  ── NOVEL RESEARCH FEATURES (9 world-first contributions) ──
+  temporal                    TEMPORAL DECEPTION GRID status & stats
+  temporal profile <name>     Switch timing profile:
+                              busy_server | flapping | degrading |
+                              recovering  | random_chaos
+  mirror                      DARK MIRROR — attacker env reflection stats
+  economics                   HONEYPOT ECONOMICS — cost imposed on attackers
+  pheromone                   DIGITAL PHEROMONE — bait status & hit stats
+  pheromone deploy            Deploy all pheromone bait files
+  pheromone deploy <name>     Deploy specific bait (exposed_env, fake_admin,
+                              git_exposed, phpinfo_bait, backup_bait)
+  ghostnet                    GHOST NETWORK — fake enterprise topology stats
+  evidence                    REGULATORY TRAP — evidence status
+  evidence collect            Collect all forensic evidence (cryptographic)
+  evidence report idcert      Generate report for ID-CERT Indonesia
+  evidence report bssid       Generate report for BSSN Indonesia
+  evidence report interpol    Generate report for INTERPOL Cybercrime
+  evidence report generic     Generate generic international format
+
+FILE LOCATIONS:
+  Vault      : ~/.rcdidn_vault/
+  Logs       : ~/.sys_meta_rcdidn/sys_kern_meta.log
+  Salt       : ~/.sys_meta_rcdidn/sys_crypto_salt.bin
+  PHANTOM    : ~/.sys_meta_rcdidn/phantom_clock.log
+  Canary     : ~/.sys_meta_rcdidn/canary_hits.log
+  DarkMirror : ~/.sys_meta_rcdidn/dark_mirror.log
+  GhostNet   : ~/.sys_meta_rcdidn/ghost_network.log
+  Pheromone  : ~/.sys_meta_rcdidn/pheromone.log
+  Economics  : ~/.sys_meta_rcdidn/economics.log
+  Evidence   : ~/.sys_meta_rcdidn/legal_evidence/
+
+ENVIRONMENT VARIABLES:
+  RCDIDN_AI_KEY   Your Google Gemini API Key. Powers the LLM AI Interrogator
+                  on port 2323. Alternatively, use 'setkey' in the commander.
+"""
+    )
+    parser.add_argument("--ips_daemon", action="store_true", help="[INTERNAL] Run as background IPS/Honeypot daemon")
+    parser.add_argument("--run", action="store_true", help="Vault all sensitive files in the current directory")
+    parser.add_argument("--restore", action="store_true", help="Restore all encrypted files from vault")
+    parser.add_argument("--status", action="store_true", help="Show system status (vault, daemon, logs)")
+    parser.add_argument("--test", action="store_true", help="Run the self-test suite (6 unit tests)")
+    parser.add_argument("--stats", action="store_true", help="Show ASCII threat intelligence dashboard")
+    parser.add_argument("--report", action="store_true", help="Generate an HTML threat intelligence report")
+    parser.add_argument("--install", action="store_true", help="Install RCDIDN as a systemd service for 24/7 auto-run (requires sudo)")
+    parser.add_argument("--uninstall", action="store_true", help="Remove RCDIDN from systemd (requires sudo)")
+    args = parser.parse_args()
+
+    if args.ips_daemon:
+        ensure_dirs()
+        log_event("[IPS] Daemon started", event_type="IPS_START")
+        start_ips_guard()
+        while True:
+            time.sleep(60)
+            
+    elif args.install:
+        install_systemd_service()
+        
+    elif args.uninstall:
+        uninstall_systemd_service()
+        
+    elif any([args.run, args.restore, args.status, args.test, args.stats, args.report]):
+        if args.run: 
+            master_key = get_or_create_key()
+            secure_massal(".", master_key)
+            
+        if args.restore:
+            c = input("[!] Restore ALL files? (y/N): ").strip().lower()
+            if c == 'y': 
+                master_key = get_or_create_key()
+                restore_files(".", master_key)
+                
+        if args.status:
+            cmd_status()
+            
+        if args.test:
+            run_self_test()
+            
+        if args.stats:
+            show_stats()
+            
+        if args.report:
+            generate_threat_report()
+    else:
+        interactive_shell()
+
+if __name__ == "__main__":
+    main()

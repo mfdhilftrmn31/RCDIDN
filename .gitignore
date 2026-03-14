@@ -1,0 +1,13 @@
+# === RCDIDN Protection ===
+.rcdidn_vault/
+.sys_meta_rcdidn/
+*.bin
+*.enc
+rc_sentinel.html
+rc_ransom.html
+rcdidn_report_*.html
+rcdidn_web.log
+__pycache__/
+*.pyc
+*.pyo
+.env
