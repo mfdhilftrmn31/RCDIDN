@@ -390,8 +390,8 @@ Works on Ubuntu, Debian, CentOS, AlmaLinux, Rocky Linux, and all major distribut
 apt update && apt install python3 python3-pip git -y
 
 # 2. Get RCDIDN
-git clone https://github.com/mfdhilftrmn31/rcdidn.git && cd rcdidn
-# or: wget https://raw.githubusercontent.com/yourusername/rcdidn/main/rcdidn.py
+https://github.com/mfdhilftrmn31/RCDIDN.git && cd rcdidn
+# or: wget https://raw.githubusercontent.com/mfdhilftrmn31/RCDIDN/main/rcdidn.py
 
 # 3. Install the single dependency
 pip3 install cryptography
