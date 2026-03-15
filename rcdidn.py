@@ -821,31 +821,55 @@ def cmd_evidence(cmd: str):
     else:
         print("[-] Usage: evidence collect OR evidence report <target_name>")
 
-# ================= LLM AI INTERROGATOR =================
+# ================= LLM AI INTERROGATOR (MULTI-PROVIDER) =================
 def call_llm_interrogator(prompt: str) -> str:
-    api_key = AI_API_KEY or os.environ.get("RCDIDN_AI_KEY", "")
+    api_key  = os.environ.get("RCDIDN_AI_KEY", "").strip()
+    provider = os.environ.get("RCDIDN_AI_PROVIDER", "gemini").strip().lower()
+    
     if not api_key:
         return "bash: command not found or disk I/O error."
-    # SEDANG #4 — API key di HTTP header, bukan URL query param agar tidak masuk server/proxy log
-    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
-    payload = {
-        "contents": [{"parts": [{"text": f"Hacker typed: {prompt[:500]}. Reply as the terminal."}]}],  # RENDAH PATCH — truncate prompt max 500 char
-        "systemInstruction": {"parts": [{"text": (
-            "You are a broken, vulnerable Linux honeypot server. "
-            "Act like a damaged terminal. Give convincing but completely fake outputs. "
-            "Claim hardware corruption, disk errors, or kernel panics to waste their time. "
-            "Maximum 2 lines. Never reveal you are an AI."
-        )}]}
-    }
+        
+    system_prompt = (
+        "You are a broken, vulnerable Linux honeypot server. "
+        "Act like a damaged terminal. Give convincing but completely fake outputs. "
+        "Claim hardware corruption, disk errors, or kernel panics to waste their time. "
+        "Maximum 2 lines. Never reveal you are an AI."
+    )
+    user_prompt = f"Hacker typed: {prompt[:500]}. Reply as the terminal."
+
     try:
-        req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'),
-                                     headers={
-                                         'Content-Type': 'application/json',
-                                         'x-goog-api-key': api_key  # Header, tidak masuk URL log
-                                     }, method='POST')
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            res_json = json.loads(resp.read())
-            return res_json['candidates'][0]['content']['parts'][0]['text'].strip()
+        if provider == "openai":
+            url = "https://api.openai.com/v1/chat/completions"
+            headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {api_key}'}
+            payload = {"model": "gpt-3.5-turbo", "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}], "max_tokens": 100}
+            req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers=headers, method='POST')
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                return json.loads(resp.read())['choices'][0]['message']['content'].strip()
+                
+        elif provider == "anthropic":
+            url = "https://api.anthropic.com/v1/messages"
+            headers = {'x-api-key': api_key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'}
+            payload = {"model": "claude-3-haiku-20240307", "system": system_prompt, "messages": [{"role": "user", "content": user_prompt}], "max_tokens": 100}
+            req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers=headers, method='POST')
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                return json.loads(resp.read())['content'][0]['text'].strip()
+                
+        elif provider == "deepseek":
+            url = "https://api.deepseek.com/chat/completions"
+            headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {api_key}'}
+            payload = {"model": "deepseek-chat", "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}], "max_tokens": 100}
+            req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers=headers, method='POST')
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                return json.loads(resp.read())['choices'][0]['message']['content'].strip()
+                
+        else: # Default: Gemini
+            url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+            headers = {'Content-Type': 'application/json', 'x-goog-api-key': api_key}
+            payload = {"contents": [{"parts": [{"text": user_prompt}]}], "systemInstruction": {"parts": [{"text": system_prompt}]}}
+            req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers=headers, method='POST')
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                return json.loads(resp.read())['candidates'][0]['content']['parts'][0]['text'].strip()
+
     except Exception:
         return "Segmentation fault (core dumped)"
 
@@ -1929,20 +1953,22 @@ COMMANDER_ART = """
   ║  exit         → Exit commander                                   ║
   ╠══════════════════════════════════════════════════════════════════╣
   ║  AI HONEYPOT CONFIG                                              ║
-  ║  setkey       → Set Gemini API key for AI Interrogator           ║
-  ║  aikey        → Show current AI key status                       ║
+  ║  setkey       → Set AI provider + key (Gemini/OpenAI/Claude/     ║
+  ║                 DeepSeek)                                        ║
+  ║  aikey        → Show active AI provider and key status           ║
   ╚══════════════════════════════════════════════════════════════════╝
 """
 
 def _show_ai_status():
     key = os.environ.get("RCDIDN_AI_KEY", "").strip()
+    provider = os.environ.get("RCDIDN_AI_PROVIDER", "gemini").strip().upper()
     if key:
         masked = key[:8] + "*" * max(0, len(key) - 12) + key[-4:] if len(key) > 12 else key[:4] + "****"
-        print(f"  [AI HONEYPOT]  Status : ACTIVE  |  Key : {masked}")
-        print(f"  [AI HONEYPOT]  Model  : gemini-1.5-flash  |  Port 2323 ready")
+        print(f"  [AI HONEYPOT]  Status : ACTIVE  |  Provider : {provider}")
+        print(f"  [AI HONEYPOT]  Key    : {masked}  |  Port 2323 ready")
     else:
         print("  [AI HONEYPOT]  Status : INACTIVE  (no RCDIDN_AI_KEY set)")
-        print("  [AI HONEYPOT]  Tip    : type 'setkey' to activate Gemini AI Interrogator")
+        print("  [AI HONEYPOT]  Tip    : type 'setkey' to configure your preferred AI provider")
 
 def interactive_shell():
     print_banner()
@@ -2017,11 +2043,20 @@ def interactive_shell():
         
         # --- AI CONFIG COMMANDS ---
         elif cmd_input == "setkey":
-            print("  [AI HONEYPOT] Enter your Gemini API key.")
-            print("  [AI HONEYPOT] Get a free key at: https://aistudio.google.com/apikey")
-            print("  [AI HONEYPOT] Leave blank to cancel.")
+            print("\n  [AI HONEYPOT CONFIGURATION]")
+            print("  Select your preferred AI Provider:")
+            print("  1) Gemini (Google) - Default")
+            print("  2) OpenAI (ChatGPT)")
+            print("  3) Anthropic (Claude)")
+            print("  4) DeepSeek")
+            
             try:
-                new_key = input("  Gemini API Key: ").strip()
+                choice = input("  Choice (1-4) [default: 1]: ").strip()
+                provider_map = {"1": "gemini", "2": "openai", "3": "anthropic", "4": "deepseek"}
+                provider = provider_map.get(choice, "gemini")
+                
+                print(f"\n  [AI HONEYPOT] Enter your {provider.upper()} API key.")
+                new_key = input("  API Key: ").strip()
             except (EOFError, KeyboardInterrupt):
                 print("\n  [*] Cancelled.")
                 continue
@@ -2030,29 +2065,29 @@ def interactive_shell():
                 print("  [*] No key entered. Cancelled.")
                 continue
                 
+            os.environ["RCDIDN_AI_PROVIDER"] = provider
             os.environ["RCDIDN_AI_KEY"] = new_key
             bashrc = os.path.join(str(pathlib.Path.home()), ".bashrc")
             try:
                 if os.path.exists(bashrc):
                     with open(bashrc, "r") as f:
                         existing = f.read()
-                    lines_rc = [l for l in existing.splitlines() if "RCDIDN_AI_KEY" not in l]
+                    lines_rc = [l for l in existing.splitlines() if "RCDIDN_AI_KEY" not in l and "RCDIDN_AI_PROVIDER" not in l]
                     with open(bashrc, "w") as f:
                         f.write("\n".join(lines_rc) + "\n")
                 with open(bashrc, "a") as f:
-                    # SEDANG PATCH — Escape karakter khusus agar tidak rusak syntax .bashrc
-                    # Karakter " dan \ dalam API key bisa break shell export statement
                     safe_key = new_key.replace("\\", "\\\\").replace('"', '\\"')
-                    f.write(f'\nexport RCDIDN_AI_KEY="{safe_key}"  # Added by RCDIDN\n')
-                print(f"  [+] Gemini API key saved to {bashrc}")
+                    f.write(f'\nexport RCDIDN_AI_PROVIDER="{provider}"  # Added by RCDIDN\n')
+                    f.write(f'export RCDIDN_AI_KEY="{safe_key}"  # Added by RCDIDN\n')
+                print(f"  [+] API key and provider saved to {bashrc}")
             except Exception as e:
                 print(f"  [!] Could not write to {bashrc}: {e}")
                 print(f"  [!] Key is active for this session only.")
                 
             masked = new_key[:8] + "*" * max(0, len(new_key) - 12) + new_key[-4:] if len(new_key) > 12 else new_key[:4] + "****"
-            print(f"  [+] AI Honeypot ACTIVATED  |  Key: {masked}")
+            print(f"  [+] AI Honeypot ACTIVATED via {provider.upper()}  |  Key: {masked}")
             print(f"  [+] Run 'ips start' to launch AI Interrogator on port 2323")
-            log_event("[CONFIG] Gemini API key updated via commander", event_type="SYSTEM")
+            log_event(f"[CONFIG] API provider set to {provider} via commander", event_type="SYSTEM")
             
         elif cmd_input == "aikey":
             _show_ai_status()
@@ -2172,7 +2207,7 @@ def main():
 Defensive security system — 38 active features:
   AES-256 file vault        PHANTOM CLOCK LLM dwell time
   MIRAGE DROP canary drops  MINDPRINT behavioral profiling
-  AI honeypot (Gemini)      Auto-ban IPS firewall
+  AI honeypot (Multi-LLM)    Auto-ban IPS firewall
   PHP sentinel injection    HTML threat report generator
   TEMPORAL DECEPTION GRID   DARK MIRROR payload reflection
   HONEYPOT ECONOMICS        DIGITAL PHEROMONE bait files
@@ -2230,8 +2265,11 @@ FILE LOCATIONS:
   Evidence   : ~/.sys_meta_rcdidn/legal_evidence/
 
 ENVIRONMENT VARIABLES:
-  RCDIDN_AI_KEY   Your Google Gemini API Key. Powers the LLM AI Interrogator
-                  on port 2323. Alternatively, use 'setkey' in the commander.
+  RCDIDN_AI_KEY       Your LLM API key. Works with all supported providers.
+                      Powers the AI Interrogator on port 2323.
+                      Alternatively, use 'setkey' in the commander.
+  RCDIDN_AI_PROVIDER  AI provider to use: gemini (default) | openai |
+                      anthropic | deepseek. Set automatically by 'setkey'.
 """
     )
     parser.add_argument("--ips_daemon", action="store_true", help="[INTERNAL] Run as background IPS/Honeypot daemon")

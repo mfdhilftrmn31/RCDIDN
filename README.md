@@ -41,7 +41,7 @@
 7. [Security Architecture](#security-architecture)
 8. [Commander Shell Reference](#commander-shell-reference)
 9. [CLI Reference](#cli-reference)
-10. [Setting Up the AI Honeypot (Gemini)](#setting-up-the-ai-honeypot-gemini)
+10. [Setting Up the AI Honeypot (Multi-Provider)](#setting-up-the-ai-honeypot-multi-provider)
 11. [24/7 Auto-Run Setup](#247-auto-run-setup)
 12. [File Locations](#file-locations)
 13. [FAQ](#faq)
@@ -88,7 +88,7 @@ RCDIDN was built to solve all of this simultaneously:
 
 | # | Feature | Port | Description |
 |---|---------|------|-------------|
-| 08 | AI Interrogator | 2323 | Fake Linux terminal powered by Gemini AI — rate-limited to 100 calls/session |
+| 08 | AI Interrogator | 2323 | Fake Linux terminal powered by **Gemini, OpenAI, Anthropic Claude, or DeepSeek** — rate-limited to 100 calls/session |
 | 09 | Endless Tarpit SSH | 2222 | Fake SSH that freezes attacker scanning tools — auto-expires after 1 hour |
 | 10 | Endless Tarpit MySQL | 3306 | Fake MySQL that freezes attacker tools — auto-expires after 1 hour |
 
@@ -459,7 +459,8 @@ docker build -t rcdidn .
 docker run -d \
   --name rcdidn \
   -p 2222:2222 -p 2323:2323 -p 3306:3306 -p 4444:4444 \
-  -e RCDIDN_AI_KEY="your_gemini_key" \
+  -e RCDIDN_AI_PROVIDER="gemini" \
+  -e RCDIDN_AI_KEY="your_api_key_here" \
   -v rcdidn_data:/root/.sys_meta_rcdidn \
   -v rcdidn_vault:/root/.rcdidn_vault \
   --restart always \
@@ -552,7 +553,7 @@ RCDIDN V1.0 underwent a full multi-round security audit. Every identified vulner
 
 #### 🟡 Medium — Fixed (Summary)
 
-All 9 Medium vulnerabilities (M1–M9) have been patched: MD5 replaced with SHA-256 for all forensic fingerprints; GeoIP upgraded from HTTP to HTTPS; Gemini API key moved from URL parameters to HTTP headers — never appears in server logs; corrupt manifest auto-backed up before exception; all file operations wrapped in `try/except`; API key special characters safely escaped before writing to `.bashrc`; in-memory banned-IP set capped at 10,000 entries; evidence ZIPs protected with `chmod 600`.
+All 9 Medium vulnerabilities (M1–M9) have been patched: MD5 replaced with SHA-256 for all forensic fingerprints; GeoIP upgraded from HTTP to HTTPS; LLM API key moved from URL parameters to HTTP headers — never appears in server logs; corrupt manifest auto-backed up before exception; all file operations wrapped in `try/except`; API key special characters safely escaped before writing to `.bashrc`; in-memory banned-IP set capped at 10,000 entries; evidence ZIPs protected with `chmod 600`.
 
 #### 🟢 Low — Fixed (Summary)
 
@@ -590,8 +591,8 @@ Run `python3 rcdidn.py` to enter the interactive commander:
     [*] Creator: Muhamad Fadhil Faturohman
     [+] RCDIDN: Turning the Hunted into the Hunter.
 
-  [AI HONEYPOT]  Status : ACTIVE  |  Key : AIzaSyAB****xyz1
-  [AI HONEYPOT]  Model  : gemini-1.5-flash  |  Port 2323 ready
+  [AI HONEYPOT]  Status : ACTIVE  |  Provider : GEMINI  |  Key : AIzaSyAB****xyz1
+  [AI HONEYPOT]  Port 2323 ready
 
 RCDIDN >
 ```
@@ -648,8 +649,8 @@ RCDIDN > help
   exit         → Exit commander
 
   AI HONEYPOT CONFIG
-  setkey       → Set Gemini API key
-  aikey        → Show AI key status
+  setkey       → Set AI provider + key (Gemini / OpenAI / Claude / DeepSeek)
+  aikey        → Show active AI provider and key status
 ╚══════════════════════════════════════════════════════════╝
 ```
 
@@ -1044,17 +1045,26 @@ RCDIDN > status
   [+] PHANTOM CLOCK     : 93 session(s) recorded
 ```
 
-#### `setkey` — Set Gemini API key
+#### `setkey` — Set AI provider + API key
 
 ```
 RCDIDN > setkey
 ```
 ```
-  [AI HONEYPOT] Enter your Gemini API key.
-  Gemini API Key: AIzaSyABCDEF...
+  [AI HONEYPOT CONFIGURATION]
+  Select your preferred AI Provider:
+  1) Gemini (Google) - Default
+  2) OpenAI (ChatGPT)
+  3) Anthropic (Claude)
+  4) DeepSeek
 
-  [+] Gemini API key saved to /root/.bashrc
-  [+] AI Honeypot ACTIVATED  |  Key: AIzaSyAB****xyz1
+  Choice (1-4) [default: 1]: 1
+
+  [AI HONEYPOT] Enter your GEMINI API key.
+  API Key: AIzaSyABCDEF...
+
+  [+] API key and provider saved to /root/.bashrc
+  [+] AI Honeypot ACTIVATED via GEMINI  |  Key: AIzaSyAB****xyz1
   [+] Run 'ips start' to launch AI Interrogator on port 2323
 ```
 
@@ -1066,14 +1076,14 @@ RCDIDN > aikey
 
 With key active:
 ```
-  [AI HONEYPOT]  Status : ACTIVE  |  Key : AIzaSyAB****xyz1
-  [AI HONEYPOT]  Model  : gemini-1.5-flash  |  Port 2323 ready
+  [AI HONEYPOT]  Status   : ACTIVE  |  Provider : GEMINI
+  [AI HONEYPOT]  Key      : AIzaSyAB****xyz1  |  Port 2323 ready
 ```
 
 Without key:
 ```
   [AI HONEYPOT]  Status : INACTIVE  (no RCDIDN_AI_KEY set)
-  [AI HONEYPOT]  Tip    : type 'setkey' to activate Gemini AI Interrogator
+  [AI HONEYPOT]  Tip    : type 'setkey' to configure your preferred AI provider
 ```
 
 #### `exit` — Exit commander
@@ -1101,23 +1111,37 @@ sudo python3 rcdidn.py --uninstall    # Remove systemd service (Linux)
 
 ---
 
-## Setting Up the AI Honeypot (Gemini)
+## Setting Up the AI Honeypot (Multi-Provider)
 
-The AI Interrogator (port 2323) and PHANTOM CLOCK dwell measurement require a Google Gemini API key. **The key is entirely optional** — 37 of 38 features work without it.
+The AI Interrogator (port 2323) and PHANTOM CLOCK dwell measurement require an LLM API key. **The key is entirely optional** — 37 of 38 features work without it.
 
-**Step 1 — Get a free key**
+**Step 1 — Get an API key from your chosen provider**
 
-Go to [https://aistudio.google.com/apikey](https://aistudio.google.com/apikey) → Create API key → Copy the key.
+| # | Provider | Link | Free Tier |
+|---|----------|------|-----------|
+| 1 | **Gemini** (default) | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) | ✅ Yes |
+| 2 | **OpenAI** | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) | ❌ |
+| 3 | **Anthropic (Claude)** | [console.anthropic.com](https://console.anthropic.com) | ❌ |
+| 4 | **DeepSeek** | [platform.deepseek.com](https://platform.deepseek.com) | ❌ (very cheap) |
 
-**Step 2 — Set the key (recommended method)**
+**Step 2 — Set the provider + key (recommended method)**
 
 ```
 RCDIDN > setkey
-  [AI HONEYPOT] Enter your Gemini API key:
-  Gemini API Key: AIzaSyABCDEF...
+  [AI HONEYPOT CONFIGURATION]
+  Select your preferred AI Provider:
+  1) Gemini (Google) - Default
+  2) OpenAI (ChatGPT)
+  3) Anthropic (Claude)
+  4) DeepSeek
 
-  [+] Gemini API key saved to ~/.bashrc
-  [+] AI Honeypot ACTIVATED  |  Key: AIzaSyAB****xyz1
+  Choice (1-4) [default: 1]: 1
+
+  [AI HONEYPOT] Enter your GEMINI API key.
+  API Key: AIzaSyABCDEF...
+
+  [+] API key and provider saved to ~/.bashrc
+  [+] AI Honeypot ACTIVATED via GEMINI  |  Key: AIzaSyAB****xyz1
   [+] Run 'ips start' to launch AI Interrogator on port 2323
 ```
 
@@ -1131,7 +1155,7 @@ RCDIDN > ips start
   [+] GHOST NETWORK active on port 4444 — simulating 10 fake hosts
 ```
 
-> **Rate limiting:** Each session is hard-capped at 100 Gemini API calls (`MAX_AI_CALLS_PER_SESSION = 100`). After the cap, RCDIDN returns convincing static fallback responses. This prevents unexpected API costs from long-running attacker sessions.
+> **Rate limiting:** Each session is hard-capped at 100 API calls (`MAX_AI_CALLS_PER_SESSION = 100`) regardless of provider. After the cap, RCDIDN returns convincing static fallback responses. This prevents unexpected API costs from long-running attacker sessions.
 
 ---
 
@@ -1197,8 +1221,8 @@ sudo launchctl load /Library/LaunchDaemons/com.rcdidn.plist
 **Q: Do I need any technical knowledge to run RCDIDN?**
 No. `pip install cryptography` followed by `python3 rcdidn.py` is the entire installation. The commander shell guides you through everything from there.
 
-**Q: Do I need a Gemini API key?**
-No. 37 of 38 features work without any key. The AI Interrogator falls back to convincing static responses. Type `setkey` at any time to activate AI mode.
+**Q: Do I need an AI API key?**
+No. 37 of 38 features work without any key. The AI Interrogator falls back to convincing static responses. Type `setkey` at any time to activate AI mode and choose your provider: Gemini (free), OpenAI, Anthropic Claude, or DeepSeek.
 
 **Q: Will RCDIDN slow down my server?**
 No. The IPS daemon uses minimal CPU at idle. Honeypot ports only activate when something connects to them. Normal HTTP/HTTPS traffic on port 80/443 is completely unaffected.
@@ -1221,8 +1245,8 @@ No — never. VSCode's debugger activates `sys.gettrace()`, which triggers RCDID
 **Q: How do I report a real attacker to authorities?**
 Run `evidence collect` then `evidence report interpol` (international) or `evidence report idcert` (Indonesia). The output is a formatted complaint attachment plus a `chmod 600` password-protected forensic ZIP.
 
-**Q: Will RCDIDN run up a large Gemini API bill?**
-No. Each session is hard-capped at 100 API calls. After the cap, RCDIDN uses static fallback responses. Adjust `MAX_AI_CALLS_PER_SESSION` at the top of `rcdidn.py` to set a lower limit.
+**Q: Will RCDIDN run up a large API bill?**
+No. Each session is hard-capped at 100 API calls regardless of provider. After the cap, RCDIDN uses static fallback responses. Adjust `MAX_AI_CALLS_PER_SESSION` at the top of `rcdidn.py` to set a lower limit. For zero cost, use Google Gemini — it has a generous free tier that comfortably covers honeypot usage.
 
 ---
 
