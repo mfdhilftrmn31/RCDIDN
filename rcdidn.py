@@ -779,9 +779,11 @@ _OS_SIGNATURES = {
 }
 
 # Fake terminal environments tailored per detected OS
+# NOTE: callable values are invoked at use-time so dynamic fields (timestamps)
+# are evaluated lazily instead of at module-parse time.
 _MIRROR_ENVS = {
     'Kali-Linux': (
-        b"┌──(root㉿kali)-[~]\n└─$ "
+        b"\xe2\x94\x8c\xe2\x94\x80\xe2\x94\x80(root\xe2\x98\x89kali)-[~]\n\xe2\x94\x94\xe2\x94\x80$ "
     ),
     'Ubuntu-Linux': (
         b"root@ubuntu-prod:~$ "
@@ -791,12 +793,12 @@ _MIRROR_ENVS = {
         b"(c) Microsoft Corporation. All rights reserved.\r\n\r\n"
         b"C:\\Users\\Administrator> "
     ),
-    'macOS': (
+    'macOS': lambda: (
         b"Last login: " + time.strftime('%a %b %d %H:%M:%S').encode() + b" on ttys001\r\n"
         b"MacBook-Pro:~ root$ "
     ),
     'default': (
-        b"Ubuntu 22.04.3 LTS — Welcome\r\nroot@prod-server:~$ "
+        b"Ubuntu 22.04.3 LTS \xe2\x80\x94 Welcome\r\nroot@prod-server:~$ "
     ),
 }
 
@@ -833,6 +835,8 @@ def _dark_mirror_handler(conn: socket.socket, addr):
 
         # Sajikan environment yang familiar
         mirror_prompt = _MIRROR_ENVS.get(detected_os, _MIRROR_ENVS['default'])
+        if callable(mirror_prompt):
+            mirror_prompt = mirror_prompt()
 
         # Reflect payload balik + tambahkan prompt lingkungan yang familiar
         conn.send(mirror_prompt)
