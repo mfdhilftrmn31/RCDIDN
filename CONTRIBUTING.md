@@ -29,7 +29,7 @@ The most valuable thing you can do: **deploy RCDIDN on a real server and share y
 - Use case writeups
 
 ### 🧪 Testing
-- Run `python3 rcdidn.py --test` and report failures
+- Run `RCDIDN_NO_DESTRUCT=1 python3 rcdidn.py --test` and report failures
 - Test on different OS versions (Ubuntu, Debian, CentOS, Windows, macOS)
 - Stress test the honeypot with controlled scanner tools in lab environments
 
@@ -41,7 +41,10 @@ The most valuable thing you can do: **deploy RCDIDN on a real server and share y
 git clone https://github.com/[username]/rcdidn
 cd rcdidn
 pip install cryptography
-python3 rcdidn.py --test   # run self-test suite first
+
+# IMPORTANT: always use RCDIDN_NO_DESTRUCT=1 when running tests
+# Without it, coverage tools and profilers trigger the anti-debug self-destruct
+RCDIDN_NO_DESTRUCT=1 python3 rcdidn.py --test
 ```
 
 ---
@@ -52,6 +55,7 @@ python3 rcdidn.py --test   # run self-test suite first
 2. **No offensive features.** RCDIDN is strictly defensive. PRs that add active attack capabilities will not be merged.
 3. **Security first.** If you find a vulnerability, email muhamadfadhilfaturohman@gmail.com privately before opening a public issue.
 4. **One PR, one change.** Keep pull requests focused — easier to review and merge.
+5. **Testing safely.** Always use `RCDIDN_NO_DESTRUCT=1` when running tests under coverage tools, profilers, or CI/CD pipelines. Never use the VSCode debug button — it activates `sys.gettrace()` and triggers the self-destruct protocol.
 
 ---
 
